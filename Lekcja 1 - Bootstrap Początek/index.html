@@ -1,41 +1,128 @@
 <!DOCTYPE html>
 <html lang="pl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bootstrap</title>
-    <link href="../cdn/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="../cdn/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container text-center">
-        <div class="row">
-            <div class="col">
-                <!-- 1 -->
-                <div class="order-lg-1 order-md-1 order-1 border border-primary mt-lg-2">
-                    <h1> ELEMENT 1</h1>
+    <div class="container">
+        <!-- LG -->
+        <div class="container text-center d-none d-lg-block">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="border border-secondary bg-secondary rounded m-2">
+                        <h1>Blok 1</h1>
+                    </div>
                 </div>
-                <!-- 2 -->
-                <div class="order-lg-1 order-md-1 order-4 border border-primary mt-lg-2">
-                    <h1> ELEMENT 2</h1>
+                <div class="col-lg-12">
+                    <div class="border border-secondary bg-secondary rounded m-2">
+                        <h1>Blok 2</h1>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="border border-secondary bg-secondary rounded m-2">
+                        <br>
+                        <h1>Blok 3</h1>
+                        <br>
+                        <br>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="border border-secondary bg-secondary rounded m-2">
+                                <h1>Blok 4</h1>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="border border-secondary bg-secondary rounded m-2">
+                                <h1>Blok 5</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="border border-secondary bg-secondary rounded m-2">
+                        <h1>Blok 6</h1>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- 3 -->
-        <div class="col order-lg-1 order-md-1 order-4 border border-primary mt-lg-2">
-            <h1> ELEMENT 3</h1>
+        <!-- MD -->
+        <div class="container text-center d-none d-md-block d-lg-none">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 1</h1>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 2</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 3</h1>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 4</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 5</h1>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 6</h1>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- 4 -->
-        <div class="col order-lg-1 order-md-1 order-4 border border-primary mt-lg-2">
-            <h1> ELEMENT 4</h1>
-        </div>
-        <!-- 5 -->
-        <div class="col order-lg-1 order-md-1 order-4 border border-primary mt-lg-2">
-            <h1> ELEMENT 5</h1>
-        </div>
-        <!-- 6 -->
-        <div class="col order-lg-1 order-md-1 order-4 border border-primary mt-lg-2">
-            <h1> ELEMENT 6</h1>
+
+        <!-- Zwykle -->
+        <div class="container text-center d-md-none">
+            <div class="row">
+                <div class="col-12 order-1">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 1</h1>
+                    </div>
+                </div>
+                <div class="col-12 order-3">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 3</h1>
+                    </div>
+                </div>
+                <div class="col-12 order-2">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 4</h1>
+                    </div>
+                </div>
+                <div class="col-12 order-4">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 5</h1>
+                    </div>
+                </div>
+                <div class="col-12 order-5">
+                    <div class="bg-secondary rounded m-2">
+                        <h1>Blok 6</h1>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
+
 </html>
