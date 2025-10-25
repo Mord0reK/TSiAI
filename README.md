@@ -1,2 +1,2 @@
-# TSiAP
+# TSiAI
 Tworzenie Stron i Aplikacji Internetowych
