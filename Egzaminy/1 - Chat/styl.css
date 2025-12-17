@@ -1,9 +1,8 @@
 *
 {
-    font-family: garamond;
+    font-family: garamond, serif;
     margin: 0;
 }
-
 
 header
 {
@@ -13,22 +12,24 @@ header
     height: 80px;
     align-items: center;
     justify-content: center;
+    text-align: center;
     display: flex;
+    float: left;
 }
 
 main
 {
     width: 80%;
     height: 600px;
-    display: flex;
     float: left;
 }
 
 aside
 {
     background-color: coral;
-    width: 10%;
+    width: 20%;
     height: 680px;
+    float: right;
 }
 
 footer
@@ -37,6 +38,7 @@ footer
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     width: 100%;
     background-color: tomato;
     color: white;
@@ -47,6 +49,19 @@ img
     border-radius: 50%;
     padding-left: 10px;
     padding-right: 10px;
+}
+
+input[type="text"]
+{
+    width: 500px;
+}
+
+input[type="button"]
+{
+    background-color: tomato;
+    border: 1px solid darkred;
+    padding: 5px;
+    font-weight: bold;
 }
 
 #chat
@@ -64,6 +79,27 @@ img
     height: 70px;
     margin: 2%;
     padding: 3px;
-    display: flex;
+}
+
+.jolanta img
+{
+    float: left;
+}
+
+.krzysiek
+{
+    background-color: #CCC;
+    float: right;
+    text-align: right;
+}
+
+.krzysiek img
+{
+    float: right;
+}
+
+.jolanta
+{
+    background-color: #EEE;
     float: left;
 }
