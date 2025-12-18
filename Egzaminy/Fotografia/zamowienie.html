@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Fotografia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Fotografia artystyczna</h1>
+    </header>
+    <div class="obrazki">
+        <img src="obrazki/1.jpg" alt="obrazy do sprzedarzy" title="1.jpg">
+        <img src="obrazki/2.jpg" alt="obrazy do sprzedarzy" title="2.jpg">
+        <img src="obrazki/3.jpg" alt="obrazy do sprzedarzy" title="3.jpg">
+        <img src="obrazki/4.jpg" alt="obrazy do sprzedarzy" title="4.jpg">
+        <img src="obrazki/5.jpg" alt="obrazy do sprzedarzy" title="5.jpg">
+        <img src="obrazki/6.jpg" alt="obrazy do sprzedarzy" title="6.jpg">
+        <img src="obrazki/7.jpg" alt="obrazy do sprzedarzy" title="7.jpg">
+        <img src="obrazki/8.jpg" alt="obrazy do sprzedarzy" title="8.jpg">
+        <img src="obrazki/9.jpg" alt="obrazy do sprzedarzy" title="9.jpg">
+        <img src="obrazki/10.jpg" alt="obrazy do sprzedarzy" title="10.jpg">
+    </div>
+    <main>
+        <div class="lewy">
+            <h3>Zamówienie</h3>
+            <label for="obraz">Wybierz obraz: </label>
+            <input type="file" id="obraz" name="obraz" accept="image/jpeg"><br><br>
+            <label for="kopie">Liczba Kopii:</label>
+            <input type="number" name="kopie" id="kopie"><br><br>
+            <input type="radio" name="papier" id="papier" checked>
+            <label for="papier">Papier błyszczący: </label><br><br>
+            <input type="radio" name="papier" id="papier">
+            <label for="papier">Papier matowy: </label><br><br>
+            <input type="button" value="Dodaj do koszyka">
+        </div>
+        <div class="prawy">
+            <div class="nawigacyjny">
+                <ul>
+                    <li><a href="regulamin.html">Regulamin</a></li>
+                    <li><a href="uslugi.html">Usługi</a></li>
+                    <li><a href="https://pixabay.com">Zdjęcia</a></li>
+                </ul>
+            </div>
+            <div class="sekcja-prawa">
+                <h3>Koszyk</h3>
+                <div id="skrypt">
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="stopka">
+        <p>Autor strony: <em>12345678910</em></p>
+    </footer>
+</body>
+</html>
