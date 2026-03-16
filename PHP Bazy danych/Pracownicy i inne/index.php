@@ -1,0 +1,99 @@
+<?php
+require_once 'database.php';
+?>
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <title>Bazy danych - Pracownicy</title>
+</head>
+<body>
+
+    <?php
+        if(isset($_POST['submit']) && $_POST['search']!=''){
+            $stmt = $pdo->prepare("SELECT * FROM pracownicy WHERE IMIE LIKE :imie OR NAZWISKO LIKE :nazwisko");
+            $stmt -> bindValue(':imie', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+            $stmt -> bindValue(':nazwisko', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+            $stmt->execute();
+        }
+        else if (isset($_POST['reset'])){
+            $stmt = $pdo->query('SELECT * FROM pracownicy');
+        }
+        else
+        {
+            $stmt = $pdo->query('SELECT * FROM pracownicy');
+        }
+    ?>
+
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">Pracownicy</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="etaty.php">Etaty</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="zespoly.php">Zespoły</a>
+            </li>
+        </ul>
+        <form action="" method="post">
+            <div class="row my-5">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                </div>
+                <div class="col-md-1 text-left">
+                    <input type="submit" class="btn btn-primary" name="submit" value="Szukaj" />
+                </div>
+                <div class="col-md-1 text-left">
+                    <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-12">
+
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Id prac</th>
+                        <th>Imię</th>
+                        <th>Nazwisko</th>
+                        <th>Etat</th>
+                        <th>Id szefa</th>
+                        <th>Zatrudniony</th>
+                        <th>Placa pod</th>
+                        <th>Placa dod</th>
+                        <th>id zesp</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    foreach ($stmt as $row){
+                        echo '<tr>';
+                        echo '<td>'.$row['ID_PRAC'].'</td>';
+                        echo '<td>'.$row['IMIE'].'</td>';
+                        echo '<td>'.$row['NAZWISKO'].'</td>';
+                        echo '<td>'.$row['ETAT'].'</td>';
+                        echo '<td>'.$row['ID_SZEFA'].'</td>';
+                        echo '<td>'.$row['ZATRUDNIONY'].'</td>';
+                        echo '<td>'.$row['PLACA_POD'].'</td>';
+                        echo '<td>'.$row['PLACA_DOD'].'</td>';
+                        echo '<td>'.$row['ID_ZESP'].'</td>';
+                        echo '</tr>';
+                    }
+                    ?>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>
