@@ -39,6 +39,9 @@ else
         <li class="nav-item">
             <a class="nav-link" href="zespoly.php">Zespoły</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="zespoly.php">Połączone</a>
+        </li>
     </ul>
     <form action="" method="post">
         <div class="row my-5">
