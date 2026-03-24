@@ -29,7 +29,7 @@ require_once 'database.php';
     ?>
 
     <div class="container">
-        <ul class="nav nav-tabs">
+        <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#">Pracownicy</a>
             </li>
@@ -44,21 +44,21 @@ require_once 'database.php';
             </li>
         </ul>
         <form action="" method="post">
-            <div class="row my-5">we
-                <div class="col-md-4">
+            <div class="row my-5">
+                <div class="col-md-4 input-group" style="width: 40%;" >
                     <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                    <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
                 </div>
                 <div class="col-md-1 text-left">
-                    <input type="submit" class="btn btn-primary" name="submit" value="Szukaj" />
-                </div>
-                <div class="col-md-1 text-left">    
                     <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+                </div>
+                <div class="col-md-6 text-left d-flex justify-content-end">
+                    <a href="dodaj/pracownik.php" class="btn btn-success">Dodaj</a>
                 </div>
             </div>
         </form>
         <div class="row">
             <div class="col-12">
-
                 <table class="table">
                     <thead>
                     <tr>
