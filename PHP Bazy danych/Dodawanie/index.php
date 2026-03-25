@@ -53,7 +53,7 @@ require_once 'database.php';
                     <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
                 </div>
                 <div class="col-md-6 text-left d-flex justify-content-end">
-                    <a href="dodaj/pracownik.php" class="btn btn-success">Dodaj</a>
+                    <a href="dodaj/pracownik.php" class="btn btn-success">Dodaj nowego pracownika</a>
                 </div>
             </div>
         </form>
