@@ -8,6 +8,7 @@ require_once 'database.php';
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <title>Bazy danych - Etaty</title>
 </head>
 <body>
@@ -29,7 +30,7 @@ else
 ?>
 
 <div class="container">
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs mt-2">
         <li class="nav-item">
             <a class="nav-link" aria-current="page" href="index.php">Pracownicy</a>
         </li>
@@ -45,14 +46,15 @@ else
     </ul>
     <form action="" method="post">
         <div class="row my-5">
-            <div class="col-md-4">
+            <div class="col-md-4 input-group" style="width: 40%;" >
                 <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
-            </div>
-            <div class="col-md-1 text-left">
-                <input type="submit" class="btn btn-primary" name="submit" value="Szukaj" />
+                <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
             </div>
             <div class="col-md-1 text-left">
                 <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+            </div>
+            <div class="col-md-6 text-left d-flex justify-content-end">
+                <a href="dodaj/etat.php" class="btn btn-success">Dodaj nowy etat</a>
             </div>
         </div>
     </form>
@@ -64,6 +66,7 @@ else
                     <th scope="col">Nazwa</th>
                     <th scope="col">Placa od</th>
                     <th scope="col">Placa do</th>
+                    <th scope="col">Akcje</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -73,6 +76,8 @@ else
                     echo '<td>'.$row['NAZWA'].'</td>';
                     echo '<td>'.$row['PLACA_OD'].'</td>';
                     echo '<td>'.$row['PLACA_DO'].'</td>';
+                    echo '<td><a href="edytuj/etat.php?nazwa='.$row['NAZWA'].'"><button type="button" class="btn btn-outline-secondary me-2"><i class="bi bi-pencil-square"></i></button></a>';
+                    echo '<a href="edytuj/etat.php?nazwa='.$row['NAZWA'].'"><button type="button" class="btn btn-outline-danger"><i class="bi bi-trash3"></i></button></a></td>';
                     echo '</tr>';
                 }
                 ?>

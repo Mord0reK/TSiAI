@@ -8,6 +8,7 @@ require_once 'database.php';
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <title>Bazy danych - Zespoly</title>
 </head>
 <body>
@@ -30,7 +31,7 @@ else
 ?>
 
 <div class="container">
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs mt-2">
         <li class="nav-item">
             <a class="nav-link" aria-current="page" href="index.php">Pracownicy</a>
         </li>
@@ -55,6 +56,9 @@ else
             <div class="col-md-1 text-left">
                 <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
             </div>
+            <div class="col-md-6 text-left d-flex justify-content-end">
+                <a href="dodaj/zespol.php" class="btn btn-success">Dodaj nowy zespół</a>
+            </div>
         </div>
     </form>
     <div class="row">
@@ -65,6 +69,7 @@ else
                     <th scope="col">ID_ZESP</th>
                     <th scope="col">Nazwa</th>
                     <th scope="col">Adres</th>
+                    <th scope="col">Akcje</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -74,6 +79,8 @@ else
                     echo '<td>'.$row['ID_ZESP'].'</td>';
                     echo '<td>'.$row['NAZWA'].'</td>';
                     echo '<td>'.$row['ADRES'].'</td>';
+                    echo '<td><a href="edytuj/zespol.php?id='.$row['ID_ZESP'].'"><button type="button" class="btn btn-outline-secondary me-2"><i class="bi bi-pencil-square"></i></button></a>';
+                    echo '<a href="edytuj/zespol.php?id='.$row['ID_ZESP'].'"><button type="button" class="btn btn-outline-danger"><i class="bi bi-trash3"></i></button></a></td>';
                     echo '</tr>';
                 }
                 ?>

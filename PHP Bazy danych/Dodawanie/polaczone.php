@@ -66,7 +66,7 @@ require_once 'database.php';
     ?>
 
     <div class="container">
-        <ul class="nav nav-tabs">
+        <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
                 <a class="nav-link" aria-current="page" href="index.php ">Pracownicy</a>
             </li>
