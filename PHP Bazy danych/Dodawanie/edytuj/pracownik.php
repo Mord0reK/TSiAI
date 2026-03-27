@@ -289,12 +289,12 @@ if (isset($_POST['submit'])) {
                     <div class="form-floating mb-3">
                         <?php if ($blad_etat != ""): ?>
                             <select class="form-select mb-3 <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="Etat" name="etat" aria-label="Default select example">
-                                <option value="" <?php if (!isset($etat) || $etat == ""): ?>selected<?php endif; ?>>Wybierz etat</option>
-                                <?php
-                                foreach ($etaty as $row) {
-                                    $sel = (isset($etat) && $etat == $row['NAZWA']) ? ' selected' : '';
-                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                }
+                                <option value="" <?php echo (!isset($etat) || $etat === "") ? 'selected' : ''; ?>>Wybierz etat</option>
+                                <?php 
+                                    foreach ($etaty as $row) {
+                                        $etat_selected = (isset($etat) && $etat === $row['NAZWA']) || (!isset($_POST['etat']) && $pracownik['ETAT'] === $row['NAZWA']) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($row['NAZWA']) . '" ' . $etat_selected . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                    };
                                 ?>
                             </select>
                             <label for="Etat">Etat</label>
@@ -303,12 +303,11 @@ if (isset($_POST['submit'])) {
                             </div>
                         <?php else: ?>
                         <select class="form-select mb-3" id="Etat" name="etat" aria-label="Default select example">
-                            <option value="" selected>Wybierz etat</option>
-                            <?php
-                                foreach ($etaty as $row) {
-                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                }
-                            ?>
+                            <option value="" <?php echo (!isset($pracownik['ETAT']) || $pracownik['ETAT'] === "") ? 'selected' : ''; ?>>Wybierz etat</option>
+                            <?php foreach ($etaty as $row): ?>
+                                <?php $etat_selected = (isset($pracownik['ETAT']) && $pracownik['ETAT'] === $row['NAZWA']) ? 'selected' : ''; ?>
+                                <option value="<?php echo htmlspecialchars($row['NAZWA']); ?>" <?php echo $etat_selected; ?>><?php echo htmlspecialchars($row['NAZWA']); ?></option>
+                            <?php endforeach; ?>
                         </select>
                         <label for="Etat">Etat</label>
                         <?php endif; ?>
@@ -326,6 +325,12 @@ if (isset($_POST['submit'])) {
                                     echo '<option value="' . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
+
+                                // foreach ($szefy as $row) {
+                                //     $szef_selected = (isset($szef) && $szef === $row['NAZWA']) || (!isset($_POST['szef']) && $pracownik['ID_SZEFA'] === $row['ID_PRAC']) ? 'selected' : '';
+                                //     echo '<option value="' . htmlspecialchars($row['NAZWA']) . '" ' . $szef_selected . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                //     $id += 10;
+                                // };
                             ?>
                             </select>
                             <label for="floatingSelectSzef">Szef</label>
