@@ -1,5 +1,21 @@
 <?php
 require_once 'database.php';
+
+if (isset($_POST['delete']) && isset($_POST['delete_id'])){
+
+    $stmt = $pdo->prepare("UPDATE pracownicy SET id_zesp = NULL WHERE ID_ZESP = :ID_ZESP");
+    $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $pdo->prepare("DELETE FROM zespoly WHERE ID_ZESP = :ID_ZESP");
+    $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    # tu jest szpont zeby nie wywalalo komunikatu fikusnego. Mozna bylo to zostawic tak jak jest ale przy testowaniu irytuje jak cholera
+
+    header('Location: zespoly.php');
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
@@ -80,7 +96,22 @@ else
                     echo '<td>'.$row['NAZWA'].'</td>';
                     echo '<td>'.$row['ADRES'].'</td>';
                     echo '<td><a href="edytuj/zespol.php?id='.$row['ID_ZESP'].'"><button type="button" class="btn btn-outline-secondary me-2"><i class="bi bi-pencil-square"></i></button></a>';
-                    echo '<a href="edytuj/zespol.php?id='.$row['ID_ZESP'].'"><button type="button" class="btn btn-outline-danger"><i class="bi bi-trash3"></i></button></a></td>';
+                    echo '<button type="button" class="btn btn-outline-danger" 
+                                    tabindex="0"
+                                    data-bs-toggle="popover"
+                                    data-bs-placement="top"
+                                    data-bs-trigger="focus"
+                                    data-bs-title="Potwierdź usunięcie"
+                                    data-bs-content="<p class=\'mb-2\'>Czy na pewno chcesz usunąć zespół o ID: '. $row['ID_ZESP'] .'?</p>
+                                    <form method=\'post\' class=\'d-inline\'>
+                                        <input type=\'hidden\' name=\'delete_id\' value=\''. $row['ID_ZESP'] .'\'>
+                                        <button type=\'submit\' name=\'delete\' class=\'btn btn-danger btn-sm\'>Usuń</button>
+                                    </form> 
+                                    <button type=\'button\' class=\'btn btn-secondary btn-sm\' data-bs-dismiss=\'popover\'>Anuluj</button>">
+                                <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                            ';
                     echo '</tr>';
                 }
                 ?>
@@ -92,5 +123,17 @@ else
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl, {
+                trigger: 'focus',
+                html: true,
+                sanitize: false
+            });
+        });
+    });
+</script>
 </body>
 </html>

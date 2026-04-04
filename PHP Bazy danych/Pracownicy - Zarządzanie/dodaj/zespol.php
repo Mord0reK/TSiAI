@@ -14,7 +14,7 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwy
-    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-Z]/', $_POST['nazwa']))
+    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ\s]/', $_POST['nazwa']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -86,7 +86,7 @@ if (isset($_POST['submit'])) {
     <div class="container">
         <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
-                <a class="nav-link" href="../index.php ">Pracownicy</a>
+                <a class="nav-link" href="../index.php">Pracownicy</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="../etaty.php">Etaty</a>

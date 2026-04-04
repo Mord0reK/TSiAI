@@ -32,7 +32,7 @@ require_once 'database.php';
             $stmt -> bindValue(':nazwisko', '%'.$_POST['search'].'%', PDO::PARAM_STR);
             $stmt->execute();
         }
-        else if (isset($_POST['reset'])){ {
+        else if (isset($_POST['reset'])){
             $stmt = $pdo->query("SELECT
                 pracownicy.ID_PRAC,
                 pracownicy.IMIE,
@@ -46,7 +46,7 @@ require_once 'database.php';
             FROM pracownicy
             LEFT JOIN zespoly ON pracownicy.ID_ZESP = zespoly.ID_ZESP
             LEFT JOIN pracownicy AS p ON pracownicy.ID_SZEFA = p.ID_PRAC");
-        }}
+        }
         else
         {
             $stmt = $pdo->query("SELECT
@@ -68,7 +68,7 @@ require_once 'database.php';
     <div class="container">
         <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="index.php ">Pracownicy</a>
+                <a class="nav-link" aria-current="page" href="index.php">Pracownicy</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="etaty.php">Etaty</a>

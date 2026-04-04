@@ -10,9 +10,9 @@ $blad_adres = "";
 // Pobranie odpowiednich danych do formularza
 
 $stmt = $pdo->prepare("SELECT * FROM zespoly WHERE ID_ZESP = :id_zesp");
-$stmt->bindParam(':id_zesp', $_GET['id_zesp']);
+$stmt->bindParam(':id_zesp', $_GET['id']);
 $stmt->execute();
-$etat = $stmt->fetch(PDO::FETCH_ASSOC);
+$zespol = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 if (isset($_POST['submit'])) {
@@ -21,7 +21,7 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwy
-    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-Z]/', $_POST['nazwa']))
+    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ\s]/', $_POST['nazwa']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -61,7 +61,8 @@ if (isset($_POST['submit'])) {
     {
         try
         {
-            $id_zespolu = $pdo->query("SELECT MAX(ID_ZESP) AS ID FROM zespoly")->fetch(PDO::FETCH_ASSOC)['ID'] + 10;
+
+            $id_zespolu = $_GET['id'];
 
             $stmt = $pdo->prepare("UPDATE zespoly SET NAZWA = :nazwa, ADRES = :adres WHERE ID_ZESP = :ID_ZESP");
             $stmt->bindParam(':ID_ZESP', $id_zespolu);
@@ -116,13 +117,13 @@ if (isset($_POST['submit'])) {
 
                     <div class="form-floating mb-3">
                         <?php if ($blad_nazwa != ""): ?>
-                            <input type="text" name="nazwa" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : ''; ?>">
+                            <input type="text" name="nazwa" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $zespol['NAZWA']; ?>">
                             <label for="floatingInputnazwa">Nazwa</label>
                             <div class="invalid-feedback">
                                 <?php echo $blad_nazwa; ?>
                             </div>
                         <?php else: ?>
-                            <input type="text" name="nazwa" class="form-control" id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : ''; ?>">
+                            <input type="text" name="nazwa" class="form-control" id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $zespol['NAZWA']; ?>">
                             <label for="floatingInputnazwa">Nazwa</label>
                         <?php endif; ?>
                     </div>
@@ -130,13 +131,13 @@ if (isset($_POST['submit'])) {
 
                     <div class="form-floating mb-3">
                         <?php if ($blad_adres != ""): ?>
-                            <input type="text" name="adres" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputadres" value="<?php echo isset($_POST['adres']) ? htmlspecialchars($_POST['adres']) : ''; ?>">
+                            <input type="text" name="adres" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputadres" value="<?php echo isset($_POST['adres']) ? htmlspecialchars($_POST['adres']) : $zespol['ADRES']; ?>">
                             <label for="floatingInputadres">Adres</label>
                             <div class="invalid-feedback">
                                 <?php echo $blad_adres; ?>
                             </div>
                         <?php else: ?>
-                            <input type="text" name="adres" class="form-control" id="floatingInputadres"  value="<?php echo isset($_POST['adres']) ? htmlspecialchars($_POST['adres']) : ''; ?>">
+                            <input type="text" name="adres" class="form-control" id="floatingInputadres"  value="<?php echo isset($_POST['adres']) ? htmlspecialchars($_POST['adres']) : $zespol['ADRES']; ?>">
                             <label for="floatingInputadres">Adres</label>
                         <?php endif; ?>
                     </div>

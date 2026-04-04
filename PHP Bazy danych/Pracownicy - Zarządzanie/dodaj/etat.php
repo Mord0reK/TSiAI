@@ -21,7 +21,7 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwy
-    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-Z]/', $_POST['nazwa']))
+    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ]/', $_POST['nazwa']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -33,15 +33,23 @@ if (isset($_POST['submit'])) {
         $zapisano = "Nie";
         $blad_nazwa = "Nie podano nazwy";
     }
-    else if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && !in_array($_POST['nazwa'], $lista_etatow))
-    {
-        $blad = "Tak";
-        $zapisano = "Nie";
-        $blad_nazwa = "Taki etat już istnieje";
-    }
-    else if (isset($_POST['nazwa']) && !empty($_POST['nazwa']))
-    {
-        $nazwa = $_POST['nazwa'];
+    else if (isset($_POST['nazwa']) && !empty($_POST['nazwa'])) {
+
+        $etat_istnieje = false;
+
+        foreach ($lista_etatow as $row) {
+            if ($row['NAZWA'] === $_POST['nazwa']) {
+                $etat_istnieje = true;
+                break;
+            }
+        }
+        if ($etat_istnieje) {
+            $blad = "Tak";
+            $zapisano = "Nie";
+            $blad_nazwa = "Taki etat już istnieje";
+        } else {
+            $nazwa = $_POST['nazwa'];
+        }
     }
 
 
@@ -145,7 +153,7 @@ if (isset($_POST['submit'])) {
     <div class="container">
         <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
-                <a class="nav-link" href="../index.php ">Pracownicy</a>
+                <a class="nav-link" href="../index.php">Pracownicy</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="../etaty.php">Etaty</a>

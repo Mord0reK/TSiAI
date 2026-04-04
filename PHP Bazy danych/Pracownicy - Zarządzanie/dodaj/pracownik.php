@@ -12,14 +12,6 @@ $blad_data_zatrudnienia = "";
 $blad_placa_pod = "";
 $blad_placa_dod = "";
 
-// Pobranie odpowiednich danych do formularza
-
-$stmt = $pdo->prepare("SELECT * FROM pracownicy WHERE ID_PRAC = :ID_PRAC");
-$stmt->bindParam(':ID_PRAC', $_GET['id']);
-$stmt->execute();
-$pracownik = $stmt->fetch(PDO::FETCH_ASSOC);
-
-
 if (isset($_POST['submit'])) {
 
 
@@ -27,7 +19,7 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie imienia
-    if (isset($_POST['imie']) && !empty($_POST['imie']) && preg_match('/[^a-zA-Z]/', $_POST['imie']))
+    if (isset($_POST['imie']) && !empty($_POST['imie']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/', $_POST['imie']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -50,7 +42,7 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwiska
-    if (isset($_POST['nazwisko']) && !empty($_POST['nazwisko']) && preg_match('/[^a-zA-Z]/', $_POST['nazwisko']))
+    if (isset($_POST['nazwisko']) && !empty($_POST['nazwisko']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/', $_POST['nazwisko']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -188,9 +180,9 @@ if (isset($_POST['submit'])) {
     {
         try
         {
-            $id_pracownika = $_GET['id'];
+            $id_pracownika = $pdo->query("SELECT MAX(ID_PRAC) AS ID FROM pracownicy")->fetch(PDO::FETCH_ASSOC)['ID'] + 10;
 
-            $stmt = $pdo->prepare("UPDATE pracownicy SET nazwisko = :nazwisko, imie = :imie, etat = :etat, szef = :szef, data_zatrudnienia = :data_zatrudnienia, placa_pod = :placa_pod, placa_dod = :placa_dod, id_zesp = :id_zesp WHERE id_prac = :id_pracownika");
+            $stmt = $pdo->prepare("INSERT INTO pracownicy (ID_PRAC, NAZWISKO, IMIE, ETAT, ID_SZEFA, ZATRUDNIONY, PLACA_POD, PLACA_DOD, ID_ZESP) VALUES (:id_pracownika, :nazwisko, :imie, :etat, :szef, :data_zatrudnienia, :placa_pod, :placa_dod , :id_zesp)");
             $stmt->bindParam(':id_pracownika', $id_pracownika);
             $stmt->bindParam(':nazwisko', $nazwisko);
             $stmt->bindParam(':imie', $imie);
@@ -219,14 +211,14 @@ if (isset($_POST['submit'])) {
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-    <title>Edytowanie Pracownika</title>
+    <title>Dodawanie Pracownika</title>
 </head>
 <body>
 
     <div class="container">
         <ul class="nav nav-tabs mt-2">
             <li class="nav-item">
-                <a class="nav-link" href="../index.php ">Pracownicy</a>
+                <a class="nav-link" href="../index.php">Pracownicy</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="../etaty.php">Etaty</a>
@@ -240,7 +232,7 @@ if (isset($_POST['submit'])) {
         </ul>
         <div class="row">
             <div class="col-12">
-                <h3 class="mt-4">Edytowanie pracownika</h3>
+                <h3 class="mt-4">Dodawania pracownika</h3>
                 <?php
                     $stmt = $pdo->prepare('SELECT NAZWA FROM etaty');
                     $stmt->execute();
@@ -255,7 +247,7 @@ if (isset($_POST['submit'])) {
                     $zespoly = $stmt->fetchAll();
                 ?>
                 <?php if ($zapisano == "Tak"): ?>
-                    <div class="alert alert-success">Poprawnie edytowano pracownika!</div>
+                    <div class="alert alert-success">Poprawnie dodano pracownika!</div>
                 <?php endif; ?>
 
                 <form class="mt-4" method="post" action="" novalidate>
@@ -268,7 +260,7 @@ if (isset($_POST['submit'])) {
                                 <?php echo $blad_imie; ?>
                             </div>
                         <?php else: ?>
-                            <input type="text" name="imie" class="form-control" id="floatingInputImie" placeholder="Jan" value="<?php echo isset($_POST['imie']) ? htmlspecialchars($_POST['imie']) : $pracownik['IMIE']; ?>">
+                            <input type="text" name="imie" class="form-control" id="floatingInputImie" placeholder="Jan" value="<?php echo isset($_POST['imie']) ? htmlspecialchars($_POST['imie']) : ''; ?>">
                             <label for="floatingInputImie">Imię</label>
                         <?php endif; ?>
                     </div>
@@ -281,7 +273,7 @@ if (isset($_POST['submit'])) {
                                 <?php echo $blad_nazwisko; ?>
                             </div>
                         <?php else: ?>
-                            <input type="text" name="nazwisko" class="form-control" id="floatingInputNazwisko" placeholder="Kowalski" value="<?php echo isset($_POST['nazwisko']) ? htmlspecialchars($_POST['nazwisko']) : $pracownik['NAZWISKO']; ?>">
+                            <input type="text" name="nazwisko" class="form-control" id="floatingInputNazwisko" placeholder="Kowalski" value="<?php echo isset($_POST['nazwisko']) ? htmlspecialchars($_POST['nazwisko']) : ''; ?>">
                             <label for="floatingInputNazwisko">Nazwisko</label>
                         <?php endif; ?>
                     </div>
@@ -289,12 +281,12 @@ if (isset($_POST['submit'])) {
                     <div class="form-floating mb-3">
                         <?php if ($blad_etat != ""): ?>
                             <select class="form-select mb-3 <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="Etat" name="etat" aria-label="Default select example">
-                                <option value="" <?php echo (!isset($etat) || $etat === "") ? 'selected' : ''; ?>>Wybierz etat</option>
-                                <?php 
-                                    foreach ($etaty as $row) {
-                                        $etat_selected = (isset($etat) && $etat === $row['NAZWA']) || (!isset($_POST['etat']) && $pracownik['ETAT'] === $row['NAZWA']) ? 'selected' : '';
-                                        echo '<option value="' . htmlspecialchars($row['NAZWA']) . '" ' . $etat_selected . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                    };
+                                <option value="" <?php if (!isset($etat) || $etat == ""): ?>selected<?php endif; ?>>Wybierz etat</option>
+                                <?php
+                                foreach ($etaty as $row) {
+                                    $sel = (isset($etat) && $etat == $row['NAZWA']) ? ' selected' : '';
+                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                }
                                 ?>
                             </select>
                             <label for="Etat">Etat</label>
@@ -303,11 +295,12 @@ if (isset($_POST['submit'])) {
                             </div>
                         <?php else: ?>
                         <select class="form-select mb-3" id="Etat" name="etat" aria-label="Default select example">
-                            <option value="" <?php echo (!isset($pracownik['ETAT']) || $pracownik['ETAT'] === "") ? 'selected' : ''; ?>>Wybierz etat</option>
-                            <?php foreach ($etaty as $row): ?>
-                                <?php $etat_selected = (isset($pracownik['ETAT']) && $pracownik['ETAT'] === $row['NAZWA']) ? 'selected' : ''; ?>
-                                <option value="<?php echo htmlspecialchars($row['NAZWA']); ?>" <?php echo $etat_selected; ?>><?php echo htmlspecialchars($row['NAZWA']); ?></option>
-                            <?php endforeach; ?>
+                            <option value="" selected>Wybierz etat</option>
+                            <?php
+                                foreach ($etaty as $row) {
+                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                }
+                            ?>
                         </select>
                         <label for="Etat">Etat</label>
                         <?php endif; ?>
@@ -325,12 +318,6 @@ if (isset($_POST['submit'])) {
                                     echo '<option value="' . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
-
-                                // foreach ($szefy as $row) {
-                                //     $szef_selected = (isset($szef) && $szef === $row['NAZWA']) || (!isset($_POST['szef']) && $pracownik['ID_SZEFA'] === $row['ID_PRAC']) ? 'selected' : '';
-                                //     echo '<option value="' . htmlspecialchars($row['NAZWA']) . '" ' . $szef_selected . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                //     $id += 10;
-                                // };
                             ?>
                             </select>
                             <label for="floatingSelectSzef">Szef</label>
@@ -376,11 +363,7 @@ if (isset($_POST['submit'])) {
                                 <?php
                                 $id = 10;
                                 foreach ($zespoly as $row) {
-                                    if ($row['ID'] == $pracownik['ID_ZESP']) {
-                                        echo '<option value="' . $id . '" selected>' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                    } else {
-                                        echo '<option value="'  . $id . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
-                                    }
+                                    echo '<option value="'  . $id . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
                                 ?>
@@ -391,13 +374,13 @@ if (isset($_POST['submit'])) {
 
                     <div class="form-floating mb-3">
                         <?php if ($blad_data_zatrudnienia != ""): ?>
-                            <input type="date" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?>" name="data_zatrudnienia" id="data_zatrudnienia" value="<?php echo isset($_POST['data_zatrudnienia']) ? htmlspecialchars($_POST['data_zatrudnienia']) : $pracownik['ZATRUDNIONY']; ?>">
+                            <input type="date" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?>" name="data_zatrudnienia" id="data_zatrudnienia" value="<?php echo isset($_POST['data_zatrudnienia']) ? htmlspecialchars($_POST['data_zatrudnienia']) : ''; ?>">
                             <label for="data_zatrudnienia">Data zatrudnienia</label>
                             <div class="invalid-feedback">
                                 <?php echo $blad_data_zatrudnienia; ?>
                             </div>
                         <?php else: ?>
-                            <input type="date" class="form-control" name="data_zatrudnienia" id="data_zatrudnienia" value="<?php echo isset($_POST['data_zatrudnienia']) ? htmlspecialchars($_POST['data_zatrudnienia']) : $pracownik['ZATRUDNIONY']; ?>">
+                            <input type="date" class="form-control" name="data_zatrudnienia" id="data_zatrudnienia" value="<?php echo isset($_POST['data_zatrudnienia']) ? htmlspecialchars($_POST['data_zatrudnienia']) : ''; ?>">
                             <label for="data_zatrudnienia">Data zatrudnienia</label>
                         <?php endif; ?>
                     </div>
@@ -410,7 +393,7 @@ if (isset($_POST['submit'])) {
                                 <?php echo $blad_placa_pod; ?>
                             </div>
                         <?php else: ?>
-                            <input type="number" class="form-control" name="placa_pod" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_pod']) ? htmlspecialchars($_POST['placa_pod']) : $pracownik['PLACA_POD']; ?>">
+                            <input type="number" class="form-control" name="placa_pod" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_pod']) ? htmlspecialchars($_POST['placa_pod']) : ''; ?>">
                             <label for="floatingInputPłaca">Płaca podstawowa</label>
                         <?php endif; ?>
                     </div>
@@ -423,7 +406,7 @@ if (isset($_POST['submit'])) {
                                 <?php echo $blad_placa_dod; ?>
                             </div>
                         <?php else: ?>
-                            <input type="number" class="form-control" name="placa_dod" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_dod']) ? htmlspecialchars($_POST['placa_dod']) : $pracownik['PLACA_DOD']; ?>">
+                            <input type="number" class="form-control" name="placa_dod" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_dod']) ? htmlspecialchars($_POST['placa_dod']) : ''; ?>">
                             <label for="floatingInputPłacaDodatkowa">Płaca dodatkowa</label>
                         <?php endif; ?>
                     </div>
