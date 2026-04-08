@@ -19,7 +19,14 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie imienia
-    if (isset($_POST['imie']) && !empty($_POST['imie']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/', $_POST['imie']))
+
+    if (isset($_POST['imie']) && !empty($_POST['imie']) && mb_strlen($_POST['imie']) > 20)
+    {
+        $blad = "Tak";
+        $zapisano = "Nie";
+        $blad_imie = "Imię pracownika nie może być dłuższe niż 20 znaków";
+    }
+    else if (isset($_POST['imie']) && !empty($_POST['imie']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/u', $_POST['imie']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -42,7 +49,14 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwiska
-    if (isset($_POST['nazwisko']) && !empty($_POST['nazwisko']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/', $_POST['nazwisko']))
+
+    if (isset($_POST['nazwisko']) && !empty($_POST['nazwisko']) && mb_strlen($_POST['nazwisko']) > 15)
+    {
+        $blad = "Tak";
+        $zapisano = "Nie";
+        $blad_nazwisko = "Nazwisko pracownika nie może być dłuższe niż 15 znaków";
+    }
+    else if (isset($_POST['nazwisko']) && !empty($_POST['nazwisko']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ-]/u', $_POST['nazwisko']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -81,11 +95,9 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie szefa
-    if (!isset($_POST['szef']) || $_POST['szef'] == "0")
+    if (isset($_POST['szef']) && $_POST['szef'] == "0")
     {
-        $zapisano = "Nie";
-        $blad = "Tak";
-        $blad_szef = "Nie wybrano szefa";
+        $szef = Null;
     }
     else if (isset($_POST['szef']))
     {
@@ -119,9 +131,21 @@ if (isset($_POST['submit'])) {
         $blad = "Tak";
         $blad_data_zatrudnienia = "Nie podano daty zatrudnienia";
     }
+
     else if (isset($_POST['data_zatrudnienia']) && !empty($_POST['data_zatrudnienia']))
     {
-        $data_zatrudnienia = DateTime::createFromFormat('Y-m-d', $_POST['data_zatrudnienia'])->format('Y-m-d');
+        $data = DateTime::createFromFormat('Y-m-d', $_POST['data_zatrudnienia']);
+        $dzisiaj = new DateTime();
+        $min_data = (clone $dzisiaj)->modify('-100 years');
+        $max_data = (clone $dzisiaj)->modify('+100 years');
+
+        if ($data < $min_data || $data > $max_data) {
+            $zapisano = "Nie";
+            $blad = "Tak";
+            $blad_data_zatrudnienia = "Data nie może być o 100 lat do tyłu oraz 100 lat do przodu";
+        } else {
+            $data_zatrudnienia = $data->format('Y-m-d');
+        }
     }
 
 
@@ -162,6 +186,18 @@ if (isset($_POST['submit'])) {
         $zapisano = "Nie";
         $blad = "Tak";
         $blad_placa_dod = "Wprowadzono złą płacę dodatkową";
+    }
+    else if (!empty($_POST['placa_dod']) && $_POST['placa_dod'] <= 0)
+    {
+        $zapisano = "Nie";
+        $blad = "Tak";
+        $blad_placa_dod = "Płaca dodatkowa nie może być mniejsza od 0";
+    }
+    else if (!empty($_POST['placa_dod']) && $_POST['placa_dod'] >= $_POST['placa_pod'])
+    {
+        $zapisano = "Nie";
+        $blad = "Tak";
+        $blad_placa_dod = "Płaca dodatkowa nie może być większa niż płaca podstawowa";
     }
     else if (!empty($_POST['placa_dod']))
     {
@@ -281,10 +317,10 @@ if (isset($_POST['submit'])) {
                     <div class="form-floating mb-3">
                         <?php if ($blad_etat != ""): ?>
                             <select class="form-select mb-3 <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="Etat" name="etat" aria-label="Default select example">
-                                <option value="" <?php if (!isset($etat) || $etat == ""): ?>selected<?php endif; ?>>Wybierz etat</option>
+                                <option value="" <?php if (!isset($_POST['etat']) || $_POST['etat'] == ""): ?>selected<?php endif; ?>>Wybierz etat</option>
                                 <?php
                                 foreach ($etaty as $row) {
-                                    $sel = (isset($etat) && $etat == $row['NAZWA']) ? ' selected' : '';
+                                    $sel = (isset($_POST['etat']) && $_POST['etat'] == $row['NAZWA']) ? ' selected' : '';
                                     echo '<option value="' . htmlspecialchars($row['NAZWA']) . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                 }
                                 ?>
@@ -295,10 +331,11 @@ if (isset($_POST['submit'])) {
                             </div>
                         <?php else: ?>
                         <select class="form-select mb-3" id="Etat" name="etat" aria-label="Default select example">
-                            <option value="" selected>Wybierz etat</option>
+                            <option value="" <?php if (!isset($_POST['etat']) || $_POST['etat'] == ""): ?>selected<?php endif; ?>>Wybierz etat</option>
                             <?php
                                 foreach ($etaty as $row) {
-                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                    $sel = (isset($_POST['etat']) && $_POST['etat'] == $row['NAZWA']) ? ' selected' : '';
+                                    echo '<option value="' . htmlspecialchars($row['NAZWA']) . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                 }
                             ?>
                         </select>
@@ -309,12 +346,12 @@ if (isset($_POST['submit'])) {
                     <div class="form-floating mb-3">
                         <?php if ($blad_szef != ""): ?>
                             <select class="form-select mb-3 <?php if ($blad != ""): ?> is-invalid <?php endif; ?>" name="szef" id="floatingSelectSzef" aria-label="Default select example">
-                                <?php $szef_sel = (!isset($szef) || $szef == "0") ? ' selected' : ''; ?>
+                                <?php $szef_sel = (!isset($_POST['szef']) || $_POST['szef'] == "0") ? ' selected' : ''; ?>
                                 <option value="0"<?php echo $szef_sel; ?>>Brak szefa</option>
                                 <?php
                                 $id = 100;
                                 foreach ($szefy as $row) {
-                                    $sel = (isset($szef) && $szef == $id) ? ' selected' : '';
+                                    $sel = (isset($_POST['szef']) && $_POST['szef'] == $id) ? ' selected' : '';
                                     echo '<option value="' . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
@@ -326,11 +363,13 @@ if (isset($_POST['submit'])) {
                             </div>
                         <?php else: ?>
                             <select class="form-select mb-3" name="szef" id="floatingSelectSzef" aria-label="Default select example">
-                                <option value="0" selected>Brak szefa</option>
+                                <?php $szef_sel = (!isset($_POST['szef']) || $_POST['szef'] == "0") ? ' selected' : ''; ?>
+                                <option value="0" <?php echo $szef_sel; ?>>Brak szefa</option>
                                 <?php
                                 $id = 100;
                                 foreach ($szefy as $row) {
-                                    echo '<option value="' . $id . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                    $sel = (isset($_POST['szef']) && $_POST['szef'] == $id) ? ' selected' : '';
+                                    echo '<option value="' . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
                                 ?>
@@ -342,12 +381,12 @@ if (isset($_POST['submit'])) {
                     <div class="form-floating mb-3">
                         <?php if ($blad_zespol != ""): ?>
                             <select class="form-select mb-3 <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " name="zespol" id="zespol">
-                                <?php $zespol_sel = (!isset($zespol) || $zespol == "0") ? ' selected' : ''; ?>
+                                <?php $zespol_sel = (!isset($_POST['zespol']) || $_POST['zespol'] == "0") ? ' selected' : ''; ?>
                                 <option value="0"<?php echo $zespol_sel; ?>>Brak Zespołu</option>
                                 <?php
                                 $id = 10;
                                 foreach ($zespoly as $row) {
-                                    $sel = (isset($zespol) && $zespol == $id) ? ' selected' : '';
+                                    $sel = (isset($_POST['zespol']) && $_POST['zespol'] == $id) ? ' selected' : '';
                                     echo '<option value="' . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
@@ -359,11 +398,13 @@ if (isset($_POST['submit'])) {
                             </div>
                         <?php else: ?>
                             <select class="form-select mb-3" name="zespol" id="zespol">
-                                <option value="0" selected>Brak Zespołu</option>
+                                <?php $zespol_sel = (!isset($_POST['zespol']) || $_POST['zespol'] == "0") ? ' selected' : ''; ?>
+                                <option value="0" <?php echo $zespol_sel; ?>>Brak Zespołu</option>
                                 <?php
                                 $id = 10;
                                 foreach ($zespoly as $row) {
-                                    echo '<option value="'  . $id . '">' . htmlspecialchars($row['NAZWA']) . '</option>';
+                                    $sel = (isset($_POST['zespol']) && $_POST['zespol'] == $id) ? ' selected' : '';
+                                    echo '<option value="'  . $id . '"' . $sel . '>' . htmlspecialchars($row['NAZWA']) . '</option>';
                                     $id += 10;
                                 }
                                 ?>
@@ -412,6 +453,7 @@ if (isset($_POST['submit'])) {
                     </div>
 
                     <button type="submit" name="submit" class="btn btn-success"><i class="bi bi-plus-lg m-auto"></i>Zapisz dane</button>
+                    <a href="../index.php"><button type="button" name="wroc" class="btn btn-secondary" onclick="wroc()"><i class="bi bi-arrow-left"></i>Wróć</button></a>
                 </form>
             </div>
         </div>

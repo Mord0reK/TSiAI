@@ -19,9 +19,13 @@ if (isset($_POST['submit'])) {
 
 
 
-
-    // Sprawdzanie nazwy
-    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ]/', $_POST['nazwa']))
+    if (isset($_POST['nazwa']) && strlen($_POST['nazwa']) > 15)
+    {
+        $blad = "Tak";
+        $zapisano = "Nie";
+        $blad_nazwa = "Nazwa etatu nie może być dłuższa niż 15 znaków.";
+    }
+    else if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ]/', $_POST['nazwa']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -214,6 +218,7 @@ if (isset($_POST['submit'])) {
                     </div>
 
                     <button type="submit" name="submit" class="btn btn-success"><i class="bi bi-plus-lg m-auto"></i>Zapisz dane</button>
+                    <a href="../etaty.php"><button type="button" name="wroc" class="btn btn-secondary" onclick="wroc()"><i class="bi bi-arrow-left"></i>Wróć</button></a>
                 </form>
             </div>
         </div>

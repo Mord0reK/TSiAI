@@ -30,7 +30,13 @@ if (isset($_POST['submit'])) {
 
 
     // Sprawdzanie nazwy
-    if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ]/', $_POST['nazwa']))
+    if (isset($_POST['nazwa']) && strlen($_POST['nazwa']) > 15)
+    {
+        $blad = "Tak";
+        $zapisano = "Nie";
+        $blad_nazwa = "Nazwa etatu nie może być dłuższa niż 15 znaków.";
+    }
+    else if (isset($_POST['nazwa']) && !empty($_POST['nazwa']) && preg_match('/[^a-zA-ZąĆćęłńóśżźĄĆĘŁŃÓŚŻŹ]/', $_POST['nazwa']))
     {
         $blad = "Tak";
         $zapisano = "Nie";
@@ -167,49 +173,66 @@ if (isset($_POST['submit'])) {
                     <div class="alert alert-success">Poprawnie edytowano etat!</div>
                 <?php endif; ?>
 
-                <form class="mt-4" method="post" action="" novalidate>
+                <!--Query do błędu-->
 
-                    <div class="form-floating mb-3">
-                        <?php if ($blad_nazwa != ""): ?>
-                            <input type="text" name="nazwa" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $etat['NAZWA']; ?>">
-                            <label for="floatingInputnazwa">Nazwa</label>
-                            <div class="invalid-feedback">
-                                <?php echo $blad_nazwa; ?>
-                            </div>
-                        <?php else: ?>
-                            <input type="text" name="nazwa" class="form-control" id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $etat['NAZWA']; ?>">
-                            <label for="floatingInputnazwa">Nazwa</label>
-                        <?php endif; ?>
-                    </div>
+                <?php
 
-                    <div class="form-floating mb-3">
-                        <?php if ($blad_placa_od != ""): ?>
-                            <input type="number" class="form-control is-invalid" name="placa_od" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_od']) ? htmlspecialchars($_POST['placa_od']) : $etat['PLACA_OD']; ?>">
-                            <label for="floatingInputPłaca">Płaca od</label>
-                            <div class="invalid-feedback">
-                                <?php echo $blad_placa_od; ?>
-                            </div>
-                        <?php else: ?>
-                            <input type="number" class="form-control" name="placa_od" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_od']) ? htmlspecialchars($_POST['placa_od']) : $etat['PLACA_OD']; ?>">
-                            <label for="floatingInputPłaca">Płaca od</label>
-                        <?php endif; ?>
-                    </div>
+                    $stmt = $pdo->prepare('SELECT NAZWA FROM etaty');
+                    $stmt->execute();
+                    $etaty = $stmt->fetchAll();
 
-                    <div class="form-floating mb-3">
-                        <?php if ($blad_placa_do != ""): ?>
-                            <input type="number" class="form-control is-invalid" name="placa_do" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_do']) ? htmlspecialchars($_POST['placa_do']) : $etat['PLACA_DO']; ?>">
-                            <label for="floatingInputPłacaDodatkowa">Płaca do</label>
-                            <div class="invalid-feedback">
-                                <?php echo $blad_placa_do; ?>
-                            </div>
-                        <?php else: ?>
-                            <input type="number" class="form-control" name="placa_do" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_do']) ? htmlspecialchars($_POST['placa_do']) : $etat['PLACA_DO']; ?>">
-                            <label for="floatingInputPłacaDodatkowa">Płaca do</label>
-                        <?php endif; ?>
-                    </div>
+                ?>
 
-                    <button type="submit" name="submit" class="btn btn-success"><i class="bi bi-plus-lg m-auto"></i>Zapisz dane</button>
-                </form>
+                <?php if (in_array($_GET['nazwa'], array_column($etaty, 'NAZWA'))): ?> ?>
+
+                    <form class="mt-4" method="post" action="" novalidate>
+
+                        <div class="form-floating mb-3">
+                            <?php if ($blad_nazwa != ""): ?>
+                                <input type="text" name="nazwa" class="form-control <?php if ($blad != ""): ?> is-invalid <?php endif; ?> " id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $etat['NAZWA']; ?>">
+                                <label for="floatingInputnazwa">Nazwa</label>
+                                <div class="invalid-feedback">
+                                    <?php echo $blad_nazwa; ?>
+                                </div>
+                            <?php else: ?>
+                                <input type="text" name="nazwa" class="form-control" id="floatingInputnazwa" placeholder="Jan" value="<?php echo isset($_POST['nazwa']) ? htmlspecialchars($_POST['nazwa']) : $etat['NAZWA']; ?>">
+                                <label for="floatingInputnazwa">Nazwa</label>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <?php if ($blad_placa_od != ""): ?>
+                                <input type="number" class="form-control is-invalid" name="placa_od" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_od']) ? htmlspecialchars($_POST['placa_od']) : $etat['PLACA_OD']; ?>">
+                                <label for="floatingInputPłaca">Płaca od</label>
+                                <div class="invalid-feedback">
+                                    <?php echo $blad_placa_od; ?>
+                                </div>
+                            <?php else: ?>
+                                <input type="number" class="form-control" name="placa_od" id="floatingInputPłaca" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_od']) ? htmlspecialchars($_POST['placa_od']) : $etat['PLACA_OD']; ?>">
+                                <label for="floatingInputPłaca">Płaca od</label>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <?php if ($blad_placa_do != ""): ?>
+                                <input type="number" class="form-control is-invalid" name="placa_do" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_do']) ? htmlspecialchars($_POST['placa_do']) : $etat['PLACA_DO']; ?>">
+                                <label for="floatingInputPłacaDodatkowa">Płaca do</label>
+                                <div class="invalid-feedback">
+                                    <?php echo $blad_placa_do; ?>
+                                </div>
+                            <?php else: ?>
+                                <input type="number" class="form-control" name="placa_do" id="floatingInputPłacaDodatkowa" placeholder="1000" min="0" value="<?php echo isset($_POST['placa_do']) ? htmlspecialchars($_POST['placa_do']) : $etat['PLACA_DO']; ?>">
+                                <label for="floatingInputPłacaDodatkowa">Płaca do</label>
+                            <?php endif; ?>
+                        </div>
+
+                        <button type="submit" name="submit" class="btn btn-success"><i class="bi bi-plus-lg m-auto"></i>Zapisz dane</button>
+                        <a href="../etaty.php"><button type="button" name="wroc" class="btn btn-secondary" onclick="wroc()"><i class="bi bi-arrow-left"></i>Wróć</button></a>
+                    </form>
+                <?php else: ?>
+                    <div class="alert alert-danger">Nie znaleziono etatu o takiej nazwie! <br> Nie baw się w hackerman'a</div>
+                    <a href="../etaty.php"><button type="button" name="wroc" class="btn btn-secondary" onclick="wroc()"><i class="bi bi-arrow-left"></i>Wróć</button></a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
