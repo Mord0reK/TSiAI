@@ -63,7 +63,7 @@ else
     <form action="" method="post">
         <div class="row my-5">
             <div class="col-md-4 input-group" style="width: 40%;" >
-                <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                <input type="text" class="form-control" name="search" id="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
                 <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
             </div>
             <div class="col-md-1 text-left">

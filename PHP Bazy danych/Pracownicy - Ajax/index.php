@@ -1,5 +1,4 @@
 <?php
-require_once 'database.php';
 
 if (isset($_POST['delete']) && isset($_POST['delete_id'])){
 
@@ -30,20 +29,19 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
 <body>
 
     <?php
-        if(isset($_POST['submit']) && $_POST['search']!=''){
-            $stmt = $pdo->prepare("SELECT * FROM pracownicy WHERE IMIE LIKE :imie OR NAZWISKO LIKE :nazwisko");
-            $stmt -> bindValue(':imie', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-            $stmt -> bindValue(':nazwisko', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-            $stmt->execute();
-        }
-        else if (isset($_POST['reset'])){
-            $stmt = $pdo->query('SELECT * FROM pracownicy');
-        }
-        else
-        {
-            $stmt = $pdo->query('SELECT * FROM pracownicy');
-        }
-
+//        if(isset($_POST['submit']) && $_POST['search']!=''){
+//            $stmt = $pdo->prepare("SELECT * FROM pracownicy WHERE IMIE LIKE :imie OR NAZWISKO LIKE :nazwisko");
+//            $stmt -> bindValue(':imie', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+//            $stmt -> bindValue(':nazwisko', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+//            $stmt->execute();
+//        }
+//        else if (isset($_POST['reset'])){
+//            $stmt = $pdo->query('SELECT * FROM pracownicy');
+//        }
+//        else
+//        {
+//            $stmt = $pdo->query('SELECT * FROM pracownicy');
+//        }
     ?>
 
     <div class="container">
@@ -103,7 +101,7 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script src="/cdn/jquery.js"></script>
+    <script src="../../cdn/jquery.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
