@@ -1,5 +1,4 @@
 $(document).ready(function(){
-
     getPracownicy();
     getPracownicyFiltr();
 })
@@ -13,10 +12,24 @@ function getPracownicy(){
     {
         $('#pracownicy').html(data);
     })
+
+    $('#reset').on('click',function(){
+
+        $('#search').val('');
+
+        $.ajax({
+            url: "get/getPracownicy.php",
+            method: 'POST'
+        }).done(function( data )
+        {
+            $('#pracownicy').html(data);
+        })
+    })
 }
 
 function getPracownicyFiltr(){
     $('#form').on('submit',function(e){
+        e.preventDefault();
         $.ajax({
             url: "get/getPracownicyFiltr.php",
             method: 'POST',

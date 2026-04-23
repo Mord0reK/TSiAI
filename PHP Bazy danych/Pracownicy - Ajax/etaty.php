@@ -30,19 +30,19 @@ if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
 <body>
 
 <?php
-
-if(isset($_POST['submit']) && $_POST['search']!=''){
-    $stmt = $pdo->prepare("SELECT * FROM etaty WHERE NAZWA LIKE :nazwa");
-    $stmt -> bindValue(':nazwa', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-    $stmt->execute();
-}
-else if (isset($_POST['reset'])){
-    $stmt = $pdo->query('SELECT * FROM etaty');
-}
-else
-{
-    $stmt = $pdo->query('SELECT * FROM etaty');
-}
+//
+//if(isset($_POST['submit']) && $_POST['search']!=''){
+//    $stmt = $pdo->prepare("SELECT * FROM etaty WHERE NAZWA LIKE :nazwa");
+//    $stmt -> bindValue(':nazwa', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+//    $stmt->execute();
+//}
+//else if (isset($_POST['reset'])){
+//    $stmt = $pdo->query('SELECT * FROM etaty');
+//}
+//else
+//{
+//    $stmt = $pdo->query('SELECT * FROM etaty');
+//}
 ?>
 
 <div class="container">
@@ -56,18 +56,15 @@ else
         <li class="nav-item">
             <a class="nav-link" href="zespoly.php">Zespoły</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="polaczone.php">Połączone</a>
-        </li>
     </ul>
-    <form action="" method="post">
+    <form action="" method="post" id="form">
         <div class="row my-5">
             <div class="col-md-4 input-group" style="width: 40%;" >
                 <input type="text" class="form-control" name="search" id="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
                 <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
             </div>
             <div class="col-md-1 text-left">
-                <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+                <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
             </div>
             <div class="col-md-6 text-left d-flex justify-content-end">
                 <a href="dodaj/etat.php" class="btn btn-success">Dodaj nowy etat</a>
@@ -85,33 +82,8 @@ else
                     <th scope="col">Akcje</th>
                 </tr>
                 </thead>
-                <tbody>
-                <?php
-                foreach ($stmt as $row){
-                    echo '<tr>';
-                    echo '<td>'.$row['NAZWA'].'</td>';
-                    echo '<td>'.$row['PLACA_OD'].'</td>';
-                    echo '<td>'.$row['PLACA_DO'].'</td>';
-                    echo '<td><a href="edytuj/etat.php?nazwa='.$row['NAZWA'].'"><button type="button" class="btn btn-outline-secondary me-2"><i class="bi bi-pencil-square"></i></button></a>';
-                    echo '<button type="button" class="btn btn-outline-danger" 
-                                    tabindex="0"
-                                    data-bs-toggle="popover"
-                                    data-bs-placement="top"
-                                    data-bs-trigger="focus"
-                                    data-bs-title="Potwierdź usunięcie"
-                                    data-bs-content="<p class=\'mb-2\'>Czy na pewno chcesz usunąć etat: '. $row['NAZWA'] .'?</p>
-                                    <form method=\'post\' class=\'d-inline\'>
-                                        <input type=\'hidden\' name=\'delete_nazwa\' value=\''. $row['NAZWA'] .'\'>
-                                        <button type=\'submit\' name=\'delete\' class=\'btn btn-danger btn-sm\'>Usuń</button>
-                                    </form> 
-                                    <button type=\'button\' class=\'btn btn-secondary btn-sm\' data-bs-dismiss=\'popover\'>Anuluj</button>">
-                                <i class="bi bi-trash3"></i>
-                                </button>
-                            </td>
-                            ';
-                    echo '</tr>';
-                }
-                ?>
+                <tbody id="etaty">
+
                 </tbody>
             </table>
 

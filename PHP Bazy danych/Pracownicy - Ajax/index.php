@@ -55,18 +55,15 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
             <li class="nav-item">
                 <a class="nav-link" href="zespoly.php">Zespoły</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="polaczone.php">Połączone</a>
-            </li>
         </ul>
-        <form action="" method="post">
+        <form action="" method="post" id="form">
             <div class="row my-5">
                 <div class="col-md-4 input-group" style="width: 40%;" >
-                    <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                    <input type="text" class="form-control" name="search" id="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
                     <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
                 </div>
                 <div class="col-md-1 text-left">
-                    <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+                    <button type="submit" class="btn btn-danger" name="reset" id="reset">Resetuj</button>
                 </div>
                 <div class="col-md-6 text-left d-flex justify-content-end">
                     <a href="dodaj/pracownik.php" class="btn btn-success">Dodaj nowego pracownika</a>

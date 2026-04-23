@@ -262,9 +262,6 @@ if (isset($_POST['submit'])) {
             <li class="nav-item">
                 <a class="nav-link" href="../zespoly.php">Zespoły</a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../polaczone.php">Połączone</a>
-            </li>
         </ul>
         <div class="row">
             <div class="col-12">
