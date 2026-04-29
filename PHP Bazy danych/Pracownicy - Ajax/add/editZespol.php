@@ -1,14 +1,14 @@
 <?php
 
-require_once '../get/database.php';
+require_once 'database.php';
 
-$response = array(
-    'success' => false,
-    'message' => '',
-    'errors' => array()
-);
+$zapisano = '';
+$blad = '';
+$blad_id_zesp = '';
+$blad_nazwa = '';
+$blad_adres = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (!empty($_POST)) {
     
     $id_zesp = isset($_POST['id_zesp']) ? intval($_POST['id_zesp']) : 0;
     $nazwa = isset($_POST['nazwa']) ? trim($_POST['nazwa']) : '';
@@ -16,25 +16,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Walidacja ID
     if ($id_zesp <= 0) {
-        $response['errors']['id_zesp'] = 'Nieprawidłowy ID zespołu';
+        $blad = 'Tak';
+        $blad_id_zesp = 'Nieprawidłowy ID zespołu';
     }
     
     // Walidacja nazwy
     if (empty($nazwa)) {
-        $response['errors']['nazwa'] = 'Nie podano nazwy zespołu';
+        $blad = 'Tak';
+        $blad_nazwa = 'Nie podano nazwy zespołu';
     } elseif (mb_strlen($nazwa) > 30) {
-        $response['errors']['nazwa'] = 'Nazwa zespołu nie może być dłuższa niż 30 znaków';
+        $blad = 'Tak';
+        $blad_nazwa = 'Nazwa zespołu nie może być dłuższa niż 30 znaków';
     }
     
     // Walidacja adresu
     if (empty($adres)) {
-        $response['errors']['adres'] = 'Nie podano adresu';
+        $blad = 'Tak';
+        $blad_adres = 'Nie podano adresu';
     } elseif (mb_strlen($adres) > 50) {
-        $response['errors']['adres'] = 'Adres nie może być dłuższy niż 50 znaków';
+        $blad = 'Tak';
+        $blad_adres = 'Adres nie może być dłuższy niż 50 znaków';
     }
     
     // Jeśli brak błędów - aktualizuj w bazie
-    if (empty($response['errors'])) {
+    if ($blad === '') {
         try {
             $stmt = $pdo->prepare("
                 UPDATE zespoly 
@@ -46,23 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':id_zesp', $id_zesp, PDO::PARAM_INT);
             $stmt->bindParam(':nazwa', $nazwa, PDO::PARAM_STR);
             $stmt->bindParam(':adres', $adres, PDO::PARAM_STR);
-            
+
             if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Zespół został zaktualizowany!';
-            } else {
-                $response['success'] = false;
-                $response['message'] = 'Błąd podczas aktualizacji zespołu';
+                $zapisano = 'Tak';
             }
         } catch (Exception $e) {
-            $response['success'] = false;
-            $response['message'] = 'Błąd: ' . $e->getMessage();
+            $blad = 'Tak';
         }
-    } else {
-        $response['success'] = false;
-        $response['message'] = 'Formularz zawiera błędy';
     }
 }
 
-header('Content-Type: application/json');
-echo json_encode($response);
+if ($zapisano === 'Tak') {
+    echo '<div class="alert alert-success">Zespół został zaktualizowany!</div>';
+} elseif ($blad !== '') {
+    echo '<div class="alert alert-danger">Formularz zawiera błędy</div>';
+    echo '<div data-error-for="id_zesp">' . $blad_id_zesp . '</div>';
+    echo '<div data-error-for="nazwa">' . $blad_nazwa . '</div>';
+    echo '<div data-error-for="adres">' . $blad_adres . '</div>';
+}

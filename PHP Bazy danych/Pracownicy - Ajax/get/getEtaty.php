@@ -4,13 +4,13 @@ require_once 'database.php';
 
 try {
     $stmt = $pdo->query('SELECT * FROM etaty');
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $etaty = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $html = '';
-    if (empty($results)) {
+    if (empty($etaty)) {
         $html = '<tr><td colspan="4" class="text-center text-muted">Brak etatów</td></tr>';
     } else {
-        foreach ($results as $row) {
+        foreach ($etaty as $row) {
             $html .= '<tr>';
             $html .= '<td>' . htmlspecialchars($row['NAZWA']) . '</td>';
             $html .= '<td>' . htmlspecialchars($row['PLACA_OD']) . '</td>';
@@ -19,7 +19,7 @@ try {
                         <button type="button" class="btn btn-outline-secondary me-2 btn-edit-etat" data-bs-toggle="modal" data-bs-target="#modalEditEtat" data-edit-nazwa="' . htmlspecialchars($row['NAZWA']) . '">
                             <i class="bi bi-pencil-square"></i>
                         </button>';
-            $html .= '<button type="button" class="btn btn-outline-danger btn-confirm-delete-etat" 
+            $html .= '<button type="button" class="btn btn-outline-danger btn-delete-etat" 
                                             tabindex="0"
                                             data-bs-toggle="popover"
                                             data-bs-placement="top"

@@ -73,7 +73,6 @@
                     </tr>
                     </thead>
                     <tbody id="pracownicy">
-                        <!-- Loader na start -->
                         <tr>
                             <td colspan="11" class="text-center py-5">
                                 <div class="spinner-border text-primary" role="status">
@@ -89,7 +88,6 @@
         </div>
     </div>
 
-    <!-- Modal Dodaj Pracownika -->
     <div class="modal fade" id="modalAddPracownik" tabindex="-1" aria-labelledby="modalAddPracownikLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -108,7 +106,6 @@
         </div>
     </div>
 
-    <!-- Modal Edytuj Pracownik -->
     <div class="modal fade" id="modalEditPracownik" tabindex="-1" aria-labelledby="modalEditPracownikLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
@@ -128,7 +125,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script src="../../../cdn/jquery.js"></script>
+    <script src="../../cdn/jquery.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

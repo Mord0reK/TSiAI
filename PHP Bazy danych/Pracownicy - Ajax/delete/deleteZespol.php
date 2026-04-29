@@ -1,39 +1,21 @@
 <?php
 
-require_once '../get/database.php';
-
-$response = array(
-    'success' => false,
-    'message' => ''
-);
+require_once 'database.php';
 
 if (isset($_POST['delete_id'])) {
     try {
-        // Najpierw ustaw id_zesp na NULL dla pracowników z tym zespołem
         $stmt = $pdo->prepare("UPDATE pracownicy SET id_zesp = NULL WHERE ID_ZESP = :ID_ZESP");
         $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
         $stmt->execute();
 
-        // Potem usuń zespół
         $stmt = $pdo->prepare("DELETE FROM zespoly WHERE ID_ZESP = :ID_ZESP");
         $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
-        $result = $stmt->execute();
+        $stmt->execute();
 
-        if ($result) {
-            $response['success'] = true;
-            $response['message'] = 'Zespół został usunięty!';
-        } else {
-            $response['success'] = false;
-            $response['message'] = 'Błąd podczas usuwania zespołu';
-        }
+        echo '<div class="alert alert-success">Zespół został usunięty!</div>';
     } catch (Exception $e) {
-        $response['success'] = false;
-        $response['message'] = 'Błąd: ' . $e->getMessage();
+        echo '<div class="alert alert-danger">Błąd podczas usuwania zespołu</div>';
     }
 } else {
-    $response['success'] = false;
-    $response['message'] = 'Nie podano ID zespołu';
+    echo '<div class="alert alert-danger">Nie podano ID zespołu</div>';
 }
-
-header('Content-Type: application/json');
-echo json_encode($response);

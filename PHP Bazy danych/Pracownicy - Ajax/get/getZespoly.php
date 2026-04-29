@@ -4,14 +4,14 @@ require_once 'database.php';
 
 try {
     $stmt = $pdo->query('SELECT * FROM zespoly');
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $zespoly = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $html = '';
     
-    if (empty($results)) {
+    if (empty($zespoly)) {
         $html = '<tr><td colspan="4" class="text-center text-muted">Brak zespołów</td></tr>';
     } else {
-        foreach ($results as $row) {
+        foreach ($zespoly as $row) {
             $html .= '<tr>';
             $html .= '<td>' . htmlspecialchars($row['ID_ZESP']) . '</td>';
             $html .= '<td>' . htmlspecialchars($row['NAZWA']) . '</td>';
@@ -20,7 +20,7 @@ try {
                         <button type="button" class="btn btn-outline-secondary me-2 btn-edit-zespol" data-bs-toggle="modal" data-bs-target="#modalEditZespol" data-edit-id="'.htmlspecialchars($row['ID_ZESP']).'">
                             <i class="bi bi-pencil-square"></i>
                         </button>';
-            $html .= '<button type="button" class="btn btn-outline-danger btn-confirm-delete-zespol" 
+            $html .= '<button type="button" class="btn btn-outline-danger btn-delete-zespol" 
                                             tabindex="0"
                                             data-bs-toggle="popover"
                                             data-bs-placement="top"

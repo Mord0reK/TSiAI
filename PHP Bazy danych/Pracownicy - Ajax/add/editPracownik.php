@@ -1,15 +1,20 @@
 <?php
 
-require_once '../get/database.php';
+require_once 'database.php';
 
-$response = array(
-    'success' => false,
-    'message' => '',
-    'errors' => array()
-);
+$zapisano = '';
+$blad = '';
+$blad_imie = '';
+$blad_nazwisko = '';
+$blad_etat = '';
+$blad_id_prac = '';
+$blad_id_szefa = '';
+$blad_zatrudniony = '';
+$blad_placa_pod = '';
+$blad_placa_dod = '';
+$blad_id_zesp = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
+if (!empty($_POST)) {
     $id_prac = isset($_POST['id_prac']) ? intval($_POST['id_prac']) : 0;
     $imie = isset($_POST['imie']) ? trim($_POST['imie']) : '';
     $nazwisko = isset($_POST['nazwisko']) ? trim($_POST['nazwisko']) : '';
@@ -22,38 +27,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Walidacja ID
     if ($id_prac <= 0) {
-        $response['errors']['id_prac'] = 'Nieprawidłowy ID pracownika';
+        $blad = 'Tak';
+        $blad_id_prac = 'Nieprawidłowy ID pracownika';
     }
     
     // Walidacja imienia
     if (empty($imie)) {
-        $response['errors']['imie'] = 'Nie podano imienia';
+        $blad = 'Tak';
+        $blad_imie = 'Nie podano imienia';
     } elseif (mb_strlen($imie) > 20) {
-        $response['errors']['imie'] = 'Imię nie może być dłuższe niż 20 znaków';
+        $blad = 'Tak';
+        $blad_imie = 'Imię nie może być dłuższe niż 20 znaków';
     } elseif (!preg_match('/^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s-]*$/', $imie)) {
-        $response['errors']['imie'] = 'Imię może zawierać tylko litery, spacje i myślniki';
+        $blad = 'Tak';
+        $blad_imie = 'Imię może zawierać tylko litery, spacje i myślniki';
     }
     
     // Walidacja nazwiska
     if (empty($nazwisko)) {
-        $response['errors']['nazwisko'] = 'Nie podano nazwiska';
+        $blad = 'Tak';
+        $blad_nazwisko = 'Nie podano nazwiska';
     } elseif (mb_strlen($nazwisko) > 15) {
-        $response['errors']['nazwisko'] = 'Nazwisko nie może być dłuższe niż 15 znaków';
+        $blad = 'Tak';
+        $blad_nazwisko = 'Nazwisko nie może być dłuższe niż 15 znaków';
     }
     
     // Walidacja etatu
     if (empty($etat)) {
-        $response['errors']['etat'] = 'Nie wybrano etatu';
+        $blad = 'Tak';
+        $blad_etat = 'Nie wybrano etatu';
     }
     
     // Walidacja daty zatrudnienia
     if (empty($zatrudniony)) {
-        $response['errors']['zatrudniony'] = 'Nie podano daty zatrudnienia';
+        $blad = 'Tak';
+        $blad_zatrudniony = 'Nie podano daty zatrudnienia';
     }
     
     // Walidacja płacy podstawowej
     if ($placa_pod <= 0) {
-        $response['errors']['placa_pod'] = 'Płaca podstawowa musi być większa niż 0';
+        $blad = 'Tak';
+        $blad_placa_pod = 'Płaca podstawowa musi być większa niż 0';
     } else {
         // Walidacja czy płaca mieści się w przedziale etatu
         try {
@@ -64,7 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($etat_data) {
                 if ($placa_pod < $etat_data['PLACA_OD'] || $placa_pod > $etat_data['PLACA_DO']) {
-                    $response['errors']['placa_pod'] = 'Płaca podstawowa musi być w przedziale ' . $etat_data['PLACA_OD'] . ' - ' . $etat_data['PLACA_DO'];
+                    $blad = 'Tak';
+                    $blad_placa_pod = 'Płaca podstawowa musi być w przedziale ' . $etat_data['PLACA_OD'] . ' - ' . $etat_data['PLACA_DO'];
                 }
             }
         } catch (Exception $e) {
@@ -74,16 +89,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Walidacja płacy dodatkowej
     if ($placa_dod < 0) {
-        $response['errors']['placa_dod'] = 'Płaca dodatkowa nie może być ujemna';
+        $blad = 'Tak';
+        $blad_placa_dod = 'Płaca dodatkowa nie może być ujemna';
+    } elseif ($placa_dod > $placa_pod) {
+        $blad = 'Tak';
+        $blad_placa_dod = 'Płaca dodatkowa nie może być większa niż płaca podstawowa';
     }
     
     // Walidacja zespołu
     if ($id_zesp <= 0) {
-        $response['errors']['id_zesp'] = 'Nie wybrano zespołu';
+        $blad = 'Tak';
+        $blad_id_zesp = 'Nie wybrano zespołu';
     }
     
     // Jeśli brak błędów - aktualizuj w bazie
-    if (empty($response['errors'])) {
+    if ($blad === '') {
         try {
             $stmt = $pdo->prepare("
                 UPDATE pracownicy 
@@ -102,28 +122,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':imie', $imie, PDO::PARAM_STR);
             $stmt->bindParam(':nazwisko', $nazwisko, PDO::PARAM_STR);
             $stmt->bindParam(':etat', $etat, PDO::PARAM_STR);
-            $stmt->bindParam(':id_szefa', $id_szefa, PDO::PARAM_INT);
+            if ($id_szefa === null) {
+                $stmt->bindValue(':id_szefa', null, PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(':id_szefa', $id_szefa, PDO::PARAM_INT);
+            }
             $stmt->bindParam(':zatrudniony', $zatrudniony, PDO::PARAM_STR);
             $stmt->bindParam(':placa_pod', $placa_pod);
             $stmt->bindParam(':placa_dod', $placa_dod);
             $stmt->bindParam(':id_zesp', $id_zesp, PDO::PARAM_INT);
             
             if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Pracownik został zaktualizowany!';
-            } else {
-                $response['success'] = false;
-                $response['message'] = 'Błąd podczas aktualizacji pracownika';
+                $zapisano = 'Tak';
             }
         } catch (Exception $e) {
-            $response['success'] = false;
-            $response['message'] = 'Błąd: ' . $e->getMessage();
+            $blad = 'Tak';
         }
-    } else {
-        $response['success'] = false;
-        $response['message'] = 'Formularz zawiera błędy';
     }
 }
 
-header('Content-Type: application/json');
-echo json_encode($response);
+if ($zapisano === 'Tak') {
+    echo '<div class="alert alert-success">Pracownik został zaktualizowany!</div>';
+} elseif ($blad !== '') {
+    echo '<div class="alert alert-danger">Formularz zawiera błędy</div>';
+    echo '<div data-error-for="id_prac">' . $blad_id_prac . '</div>';
+    echo '<div data-error-for="imie">' . $blad_imie . '</div>';
+    echo '<div data-error-for="nazwisko">' . $blad_nazwisko . '</div>';
+    echo '<div data-error-for="etat">' . $blad_etat . '</div>';
+    echo '<div data-error-for="id_szefa">' . $blad_id_szefa . '</div>';
+    echo '<div data-error-for="zatrudniony">' . $blad_zatrudniony . '</div>';
+    echo '<div data-error-for="placa_pod">' . $blad_placa_pod . '</div>';
+    echo '<div data-error-for="placa_dod">' . $blad_placa_dod . '</div>';
+    echo '<div data-error-for="id_zesp">' . $blad_id_zesp . '</div>';
+}

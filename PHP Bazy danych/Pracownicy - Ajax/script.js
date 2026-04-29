@@ -1,46 +1,47 @@
 $(document).ready(function(){
+    initModals();
+    initForms();
+    initReset();
+    initFilter();
     getPracownicy();
-    getPracownicyFiltr();
-    
-    // Ładuj formularz do modalu na otwarcie - ADD
+})
+
+function initModals() {
     $('#modalAddPracownik').on('show.bs.modal', function() {
         loadFormPracownik();
     });
-    
-    // Ładuj formularz do modalu na otwarcie - EDIT
+
     $('#modalEditPracownik').on('show.bs.modal', function(e) {
         var editId = $(e.relatedTarget).data('edit-id');
         loadFormEditPracownik(editId);
     });
-    
-    // Obsłuż klik na przycisk Zapisz - ADD
+}
+
+function initForms() {
     $(document).on('click', '#btnSavePracownik', function() {
         savePracownik();
     });
-    
-    // Obsłuż klik na przycisk Zapisz - EDIT
+
     $(document).on('click', '#btnSaveEditPracownik', function() {
         saveEditPracownik();
     });
-    
-    // Obsłuż Enter w formularzu - ADD
+
     $(document).on('keypress', '#formAddPracownik', function(e) {
         if (e.which == 13) {
             e.preventDefault();
             savePracownik();
         }
     });
-    
-    // Obsłuż Enter w formularzu - EDIT
+
     $(document).on('keypress', '#formEditPracownik', function(e) {
         if (e.which == 13) {
             e.preventDefault();
             saveEditPracownik();
         }
     });
-})
+}
 
-function initializePopovers() {
+function initPopovers() {
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl, {
@@ -51,70 +52,67 @@ function initializePopovers() {
     });
 }
 
-function getPracownicy(){
+function loaderDelay(callback) {
+    setTimeout(callback, 350);
+}
 
-    $.ajax({
+function getPracownicy(){
+    renderList({
         url: "get/getPracownicy.php",
-        method: 'POST'
+        $table: $('#pracownicy'),
+        colspan: 11,
+        errorText: 'Błąd podczas ładowania danych'
+    });
+}
+
+function initReset() {
+    $('#reset').off('click').on('click', function(){
+        $('#search').val('');
+        getPracownicy();
+    });
+}
+
+function initFilter(){
+    $('#form').off('submit').on('submit',function(e){
+        e.preventDefault();
+        renderList({
+            url: "get/getPracownicyFiltr.php",
+            $table: $('#pracownicy'),
+            colspan: 11,
+            data: { search: $('#search').val() },
+            errorText: 'Błąd podczas wyszukiwania'
+        });
     })
-    .done(function( data )
-    {
-        $('#pracownicy').html(data);
-        initializePopovers();
-        attachDeleteHandlers();
+}
+
+function renderTableLoader($table, colspan) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
+}
+
+function renderTableError($table, colspan, message) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center text-danger">' + message + '</td></tr>');
+}
+
+function renderList(options) {
+    renderTableLoader(options.$table, options.colspan);
+    $.ajax({
+        url: options.url,
+        method: 'POST',
+        data: options.data || undefined
+    })
+    .done(function(data) {
+        loaderDelay(function() {
+            options.$table.html(data);
+            initPopovers();
+            initDelete();
+        });
     })
     .fail(function() {
-        $('#pracownicy').html('<tr><td colspan="11" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-    })
-
-    $('#reset').on('click',function(){
-
-        $('#search').val('');
-        // Pokaż loader
-        $('#pracownicy').html('<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-
-        $.ajax({
-            url: "get/getPracownicy.php",
-            method: 'POST'
-        })
-        .done(function( data )
-        {
-            $('#pracownicy').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#pracownicy').html('<tr><td colspan="11" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-        })
-    })
+        renderTableError(options.$table, options.colspan, options.errorText);
+    });
 }
 
-function getPracownicyFiltr(){
-    $('#form').on('submit',function(e){
-        e.preventDefault();
-        
-        // Pokaż loader
-        $('#pracownicy').html('<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-        
-        $.ajax({
-            url: "get/getPracownicyFiltr.php",
-            method: 'POST',
-            data: {
-                search: $('#search').val(),
-            }
-        })
-        .done(function( data ){
-            $('#pracownicy').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#pracownicy').html('<tr><td colspan="11" class="text-center text-danger">Błąd podczas wyszukiwania</td></tr>');
-        })
-    })
-}
-
-function attachDeleteHandlers() {
+function initDelete() {
     $(document).off('click', '.btn-confirm-delete').on('click', '.btn-confirm-delete', function() {
         var deleteId = $(this).data('delete-id');
         
@@ -123,25 +121,22 @@ function attachDeleteHandlers() {
             method: 'POST',
             data: {
                 delete_id: deleteId
-            },
-            dataType: 'json'
+            }
         })
         .done(function( response )
         {
-            if (response.success) {
-                // Pokaż alert sukcesu
-                showAlert('success', response.message);
-                
-                // Zamknij popover
-                var popover = bootstrap.Popover.getInstance('[data-delete-id="' + deleteId + '"]');
+            if ($(response).filter('.alert-success').length) {
+                showAlert('success', $(response).filter('.alert-success').text());
+
+                var popoverEl = document.querySelector('[data-delete-id="' + deleteId + '"]');
+                var popover = popoverEl ? bootstrap.Popover.getInstance(popoverEl) : null;
                 if (popover) popover.hide();
-                
-                // Odśwież tabelę
+
                 setTimeout(function() {
                     getPracownicy();
                 }, 1500);
             } else {
-                showAlert('danger', response.message);
+                showAlert('danger', $(response).filter('.alert-danger').text() || 'Błąd podczas usuwania pracownika');
             }
         })
         .fail(function() {
@@ -156,18 +151,14 @@ function showAlert(type, message) {
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
         '</div>';
     
-    // Wstaw alert na górę tabeli
     $('.table').before(alertHTML);
-    
-    // Auto-close po 5 sekundach
+
     setTimeout(function() {
         $('.alert').fadeOut(function() {
             $(this).remove();
         });
     }, 5000);
 }
-
-// ======================== DODAWANIE PRACOWNIKA ========================
 
 function loadFormPracownik() {
     $.ajax({
@@ -182,55 +173,50 @@ function loadFormPracownik() {
     })
 }
 
+function applyFieldErrors(responseHtml) {
+    $('.invalid-feedback').html('');
+    $('.form-control, .form-select').removeClass('is-invalid');
+
+    var wrapper = $('<div>').html(responseHtml);
+    wrapper.find('[data-error-for]').each(function() {
+        var field = $(this).data('error-for');
+        var message = $(this).text().trim();
+        if (message) {
+            $('#' + field).addClass('is-invalid');
+            $('#' + field + '-error').html(message);
+        }
+    });
+}
+
 function savePracownik() {
     var form = $('#formAddPracownik');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/addPracownik.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
-            
-            // Zamknij modal
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
+
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddPracownik'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getPracownicy();
             }, 1000);
-        } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            return;
         }
+
+        applyFieldErrors(response);
     })
     .fail(function() {
         showAlert('danger', 'Błąd podczas wysyłania formularza');
     })
 }
-
-// ======================== EDYTOWANIE PRACOWNIKA ========================
 
 function loadFormEditPracownik(editId) {
     $.ajax({
@@ -249,44 +235,26 @@ function saveEditPracownik() {
     var form = $('#formEditPracownik');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/editPracownik.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
-            
-            // Zamknij modal
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
+
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalEditPracownik'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getPracownicy();
             }, 1000);
-        } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            return;
         }
+
+        applyFieldErrors(response);
     })
     .fail(function() {
         showAlert('danger', 'Błąd podczas wysyłania formularza');

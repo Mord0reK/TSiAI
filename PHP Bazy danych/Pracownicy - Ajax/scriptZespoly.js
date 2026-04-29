@@ -1,29 +1,32 @@
 $(document).ready(function(){
+    initModals();
+    initForms();
+    initReset();
+    initFilter();
+    initDeleteClickBlocker();
     getZespoly();
-    getZespolyFiltr();
-    
-    // Ładuj formularz do modalu na otwarcie - ADD
+})
+
+function initModals() {
     $('#modalAddZespol').on('show.bs.modal', function() {
         loadFormZespol();
     });
     
-    // Ładuj formularz do modalu na otwarcie - EDIT
     $('#modalEditZespol').on('show.bs.modal', function(e) {
         var editId = $(e.relatedTarget).data('edit-id');
         loadFormEditZespol(editId);
     });
-    
-    // Obsłuż klik na przycisk Zapisz - ADD
+}
+
+function initForms() {
     $(document).on('click', '#btnSaveZespol', function() {
         saveZespol();
     });
     
-    // Obsłuż klik na przycisk Zapisz - EDIT
     $(document).on('click', '#btnSaveEditZespol', function() {
         saveEditZespol();
     });
     
-    // Obsłuż Enter w formularzu - ADD
     $(document).on('keypress', '#formAddZespol', function(e) {
         if (e.which == 13) {
             e.preventDefault();
@@ -31,16 +34,15 @@ $(document).ready(function(){
         }
     });
     
-    // Obsłuż Enter w formularzu - EDIT
     $(document).on('keypress', '#formEditZespol', function(e) {
         if (e.which == 13) {
             e.preventDefault();
             saveEditZespol();
         }
     });
-})
+}
 
-function initializePopovers() {
+function initPopovers() {
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl, {
@@ -51,72 +53,40 @@ function initializePopovers() {
     });
 }
 
+function loaderDelay(callback) {
+    setTimeout(callback, 350);
+}
+
 function getZespoly(){
-    // Pokaż loader
-    $('#zespoly').html('<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-
-    $.ajax({
+    renderList({
         url: "get/getZespoly.php",
-        method: 'POST'
-    })
-    .done(function( data )
-    {
-        $('#zespoly').html(data);
-        initializePopovers();
-        attachDeleteHandlers();
-    })
-    .fail(function() {
-        $('#zespoly').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-    })
+        $table: $('#zespoly'),
+        colspan: 4,
+        errorText: 'Błąd podczas ładowania danych'
+    });
+}
 
-    $('#reset').on('click',function(){
-
+function initReset() {
+    $('#reset').off('click').on('click', function(){
         $('#search').val('');
-        // Pokaż loader
-        $('#zespoly').html('<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-
-        $.ajax({
-            url: "get/getZespoly.php",
-            method: 'POST'
-        })
-        .done(function( data )
-        {
-            $('#zespoly').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#zespoly').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-        })
-    })
+        getZespoly();
+    });
 }
 
-function getZespolyFiltr(){
-    $('#form').on('submit',function(e){
+function initFilter(){
+    $('#form').off('submit').on('submit',function(e){
         e.preventDefault();
-        
-        // Pokaż loader
-        $('#zespoly').html('<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-        
-        $.ajax({
+        renderList({
             url: "get/getZespolyFiltr.php",
-            method: 'POST',
-            data: {
-                search: $('#search').val(),
-            }
-        })
-        .done(function( data ){
-            $('#zespoly').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#zespoly').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas wyszukiwania</td></tr>');
-        })
+            $table: $('#zespoly'),
+            colspan: 4,
+            data: { search: $('#search').val() },
+            errorText: 'Błąd podczas wyszukiwania'
+        });
     })
 }
 
-function attachDeleteHandlers() {
+function initDelete() {
     $(document).off('click', '.btn-confirm-delete-zespol').on('click', '.btn-confirm-delete-zespol', function() {
         var deleteId = $(this).data('delete-id');
         
@@ -125,26 +95,19 @@ function attachDeleteHandlers() {
             method: 'POST',
             data: {
                 delete_id: deleteId
-            },
-            dataType: 'json'
+            }
         })
         .done(function( response )
         {
-            if (response.success) {
-                // Pokaż alert sukcesu
-                showAlert('success', response.message);
-                
-                // Zamknij popover
-                var popover = bootstrap.Popover.getInstance('[data-delete-id="' + deleteId + '"]');
-                if (popover) popover.hide();
-                
-                // Odśwież tabelę
-                setTimeout(function() {
-                    getZespoly();
-                }, 1500);
-            } else {
-                showAlert('danger', response.message);
-            }
+            showAlert('success', $(response).filter('.alert-success').text() || 'Zespół został usunięty!');
+
+            var popoverEl = document.querySelector('[data-delete-id="' + deleteId + '"]');
+            var popover = popoverEl ? bootstrap.Popover.getInstance(popoverEl) : null;
+            if (popover) popover.hide();
+
+            setTimeout(function() {
+                getZespoly();
+            }, 1000);
         })
         .fail(function() {
             showAlert('danger', 'Błąd podczas usuwania zespołu');
@@ -152,13 +115,19 @@ function attachDeleteHandlers() {
     })
 }
 
+function initDeleteClickBlocker() {
+    $(document).on('click', '.btn-delete-zespol', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+}
+
 function showAlert(type, message) {
     var alertHTML = '<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
         message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
         '</div>';
-    
-    // Wstaw alert na górze tabeli
+
     $('.table').before(alertHTML);
     
     // Auto-close po 5 sekundach
@@ -167,6 +136,48 @@ function showAlert(type, message) {
             $(this).remove();
         });
     }, 5000);
+}
+
+function applyFieldErrors(responseHtml) {
+    $('.invalid-feedback').html('');
+    $('.form-control, .form-select').removeClass('is-invalid');
+
+    var wrapper = $('<div>').html(responseHtml);
+    wrapper.find('[data-error-for]').each(function() {
+        var field = $(this).data('error-for');
+        var message = $(this).text().trim();
+        if (message) {
+            $('#' + field).addClass('is-invalid');
+            $('#' + field + '-error').html(message);
+        }
+    });
+}
+
+function renderTableLoader($table, colspan) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
+}
+
+function renderTableError($table, colspan, message) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center text-danger">' + message + '</td></tr>');
+}
+
+function renderList(options) {
+    renderTableLoader(options.$table, options.colspan);
+    $.ajax({
+        url: options.url,
+        method: 'POST',
+        data: options.data || undefined
+    })
+    .done(function(data) {
+        loaderDelay(function() {
+            options.$table.html(data);
+            initPopovers();
+            initDelete();
+        });
+    })
+    .fail(function() {
+        renderTableError(options.$table, options.colspan, options.errorText);
+    });
 }
 
 // ======================== DODAWANIE ZESPOLU ========================
@@ -188,43 +199,24 @@ function saveZespol() {
     var form = $('#formAddZespol');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/addZespol.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
             
-            // Zamknij modal
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddZespol'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getZespoly();
             }, 1000);
         } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            applyFieldErrors(response);
         }
     })
     .fail(function() {
@@ -251,43 +243,24 @@ function saveEditZespol() {
     var form = $('#formEditZespol');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/editZespol.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
             
-            // Zamknij modal
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalEditZespol'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getZespoly();
             }, 1000);
         } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            applyFieldErrors(response);
         }
     })
     .fail(function() {

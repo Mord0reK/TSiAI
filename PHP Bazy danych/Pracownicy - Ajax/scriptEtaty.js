@@ -1,29 +1,32 @@
 $(document).ready(function(){
+    initModals();
+    initForms();
+    initReset();
+    initFilter();
+    initDeleteClickBlocker();
     getEtaty();
-    getEtatyFiltr();
-    
-    // Ładuj formularz do modalu na otwarcie - ADD
+})
+
+function initModals() {
     $('#modalAddEtat').on('show.bs.modal', function() {
         loadFormEtat();
     });
     
-    // Ładuj formularz do modalu na otwarcie - EDIT
     $('#modalEditEtat').on('show.bs.modal', function(e) {
         var editNazwa = $(e.relatedTarget).data('edit-nazwa');
         loadFormEditEtat(editNazwa);
     });
-    
-    // Obsłuż klik na przycisk Zapisz - ADD
+}
+
+function initForms() {
     $(document).on('click', '#btnSaveEtat', function() {
         saveEtat();
     });
     
-    // Obsłuż klik na przycisk Zapisz - EDIT
     $(document).on('click', '#btnSaveEditEtat', function() {
         saveEditEtat();
     });
     
-    // Obsłuż Enter w formularzu - ADD
     $(document).on('keypress', '#formAddEtat', function(e) {
         if (e.which == 13) {
             e.preventDefault();
@@ -31,16 +34,15 @@ $(document).ready(function(){
         }
     });
     
-    // Obsłuż Enter w formularzu - EDIT
     $(document).on('keypress', '#formEditEtat', function(e) {
         if (e.which == 13) {
             e.preventDefault();
             saveEditEtat();
         }
     });
-})
+}
 
-function initializePopovers() {
+function initPopovers() {
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
     var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl, {
@@ -51,70 +53,40 @@ function initializePopovers() {
     });
 }
 
+function loaderDelay(callback) {
+    setTimeout(callback, 350);
+}
+
 function getEtaty(){
-
-    $.ajax({
+    renderList({
         url: "get/getEtaty.php",
-        method: 'POST'
-    })
-    .done(function( data )
-    {
-        $('#etaty').html(data);
-        initializePopovers();
-        attachDeleteHandlers();
-    })
-    .fail(function() {
-        $('#etaty').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-    })
+        $table: $('#etaty'),
+        colspan: 4,
+        errorText: 'Błąd podczas ładowania danych'
+    });
+}
 
-    $('#reset').on('click',function(){
-
+function initReset() {
+    $('#reset').off('click').on('click', function(){
         $('#search').val('');
-        // Pokaż loader
-        $('#etaty').html('<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-
-        $.ajax({
-            url: "get/getEtaty.php",
-            method: 'POST'
-        })
-        .done(function( data )
-        {
-            $('#etaty').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#etaty').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas ładowania danych</td></tr>');
-        })
-    })
+        getEtaty();
+    });
 }
 
-function getEtatyFiltr(){
-    $('#form').on('submit',function(e){
+function initFilter(){
+    $('#form').off('submit').on('submit',function(e){
         e.preventDefault();
-        
-        // Pokaż loader
-        $('#etaty').html('<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
-        
-        $.ajax({
+        renderList({
             url: "get/getEtatyFiltr.php",
-            method: 'POST',
-            data: {
-                search: $('#search').val(),
-            }
-        })
-        .done(function( data ){
-            $('#etaty').html(data);
-            initializePopovers();
-            attachDeleteHandlers();
-        })
-        .fail(function() {
-            $('#etaty').html('<tr><td colspan="4" class="text-center text-danger">Błąd podczas wyszukiwania</td></tr>');
-        })
+            $table: $('#etaty'),
+            colspan: 4,
+            data: { search: $('#search').val() },
+            errorText: 'Błąd podczas wyszukiwania'
+        });
     })
 }
 
-function attachDeleteHandlers() {
+function initDelete() {
     $(document).off('click', '.btn-confirm-delete-etat').on('click', '.btn-confirm-delete-etat', function() {
         var deleteNazwa = $(this).data('delete-nazwa');
         
@@ -123,31 +95,58 @@ function attachDeleteHandlers() {
             method: 'POST',
             data: {
                 delete_nazwa: deleteNazwa
-            },
-            dataType: 'json'
+            }
         })
         .done(function( response )
         {
-            if (response.success) {
-                // Pokaż alert sukcesu
-                showAlert('success', response.message);
-                
-                // Zamknij popover
-                var popover = bootstrap.Popover.getInstance('[data-delete-nazwa="' + deleteNazwa + '"]');
-                if (popover) popover.hide();
-                
-                // Odśwież tabelę
-                setTimeout(function() {
-                    getEtaty();
-                }, 1500);
-            } else {
-                showAlert('danger', response.message);
-            }
+            showAlert('success', $(response).filter('.alert-success').text() || 'Etat został usunięty!');
+
+            var popoverEl = document.querySelector('[data-delete-nazwa="' + deleteNazwa + '"]');
+            var popover = popoverEl ? bootstrap.Popover.getInstance(popoverEl) : null;
+            if (popover) popover.hide();
+
+            setTimeout(function() {
+                getEtaty();
+            }, 1000);
         })
         .fail(function() {
             showAlert('danger', 'Błąd podczas usuwania etatu');
         })
     })
+}
+
+function initDeleteClickBlocker() {
+    $(document).on('click', '.btn-delete-etat', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+}
+
+function renderTableLoader($table, colspan) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Ładowanie...</span></div><p class="mt-3 text-muted">Ładowanie danych...</p></td></tr>');
+}
+
+function renderTableError($table, colspan, message) {
+    $table.html('<tr><td colspan="' + colspan + '" class="text-center text-danger">' + message + '</td></tr>');
+}
+
+function renderList(options) {
+    renderTableLoader(options.$table, options.colspan);
+    $.ajax({
+        url: options.url,
+        method: 'POST',
+        data: options.data || undefined
+    })
+    .done(function(data) {
+        loaderDelay(function() {
+            options.$table.html(data);
+            initPopovers();
+            initDelete();
+        });
+    })
+    .fail(function() {
+        renderTableError(options.$table, options.colspan, options.errorText);
+    });
 }
 
 function showAlert(type, message) {
@@ -165,6 +164,21 @@ function showAlert(type, message) {
             $(this).remove();
         });
     }, 5000);
+}
+
+function applyFieldErrors(responseHtml) {
+    $('.invalid-feedback').html('');
+    $('.form-control, .form-select').removeClass('is-invalid');
+
+    var wrapper = $('<div>').html(responseHtml);
+    wrapper.find('[data-error-for]').each(function() {
+        var field = $(this).data('error-for');
+        var message = $(this).text().trim();
+        if (message) {
+            $('#' + field).addClass('is-invalid');
+            $('#' + field + '-error').html(message);
+        }
+    });
 }
 
 // ======================== DODAWANIE ETATU ========================
@@ -186,43 +200,24 @@ function saveEtat() {
     var form = $('#formAddEtat');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/addEtat.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
             
-            // Zamknij modal
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalAddEtat'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getEtaty();
             }, 1000);
         } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            applyFieldErrors(response);
         }
     })
      .fail(function() {
@@ -249,43 +244,24 @@ function saveEditEtat() {
     var form = $('#formEditEtat');
     var formData = form.serializeArray();
     
-    // Wyczyść poprzednie błędy
-    $('.invalid-feedback').html('');
-    $('.form-control, .form-select').removeClass('is-invalid');
-    
+    applyFieldErrors('');
     $.ajax({
         url: "add/editEtat.php",
         method: 'POST',
-        data: $.param(formData),
-        dataType: 'json'
+        data: $.param(formData)
     })
     .done(function(response) {
-        if (response.success) {
-            // Pokaż sukces
-            showAlert('success', response.message);
+        if ($(response).filter('.alert-success').length) {
+            showAlert('success', $(response).filter('.alert-success').text());
             
-            // Zamknij modal
             var modal = bootstrap.Modal.getInstance(document.getElementById('modalEditEtat'));
             modal.hide();
-            
-            // Odśwież tabelę
+
             setTimeout(function() {
                 getEtaty();
             }, 1000);
         } else {
-            // Pokaż błędy
-            if (response.errors && Object.keys(response.errors).length > 0) {
-                $.each(response.errors, function(field, error) {
-                    var $field = $('#' + field);
-                    if ($field.length) {
-                        $field.addClass('is-invalid');
-                        $('#' + field + '-error').html(error);
-                    }
-                });
-                showAlert('danger', response.message);
-            } else {
-                showAlert('danger', response.message);
-            }
+            applyFieldErrors(response);
         }
     })
     .fail(function() {

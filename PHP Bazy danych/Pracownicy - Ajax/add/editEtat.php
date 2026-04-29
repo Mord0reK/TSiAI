@@ -1,14 +1,14 @@
 <?php
 
-require_once '../get/database.php';
+require_once 'database.php';
 
-$response = array(
-    'success' => false,
-    'message' => '',
-    'errors' => array()
-);
+$zapisano = '';
+$blad = '';
+$blad_nazwa = '';
+$blad_placa_od = '';
+$blad_placa_do = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (!empty($_POST)) {
     
     $nazwa_stara = isset($_POST['nazwa']) ? trim($_POST['nazwa']) : '';
     $nazwa_nowa = isset($_POST['nazwa_nowa']) ? trim($_POST['nazwa_nowa']) : '';
@@ -17,31 +17,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Walidacja nazwy starej
     if (empty($nazwa_stara)) {
-        $response['errors']['nazwa'] = 'Błąd: Brak starej nazwy etatu';
+        $blad = 'Tak';
+        $blad_nazwa = 'Błąd: Brak starej nazwy etatu';
     }
     
     // Walidacja nazwy nowej
     if (empty($nazwa_nowa)) {
-        $response['errors']['nazwa_nowa'] = 'Nie podano nazwy etatu';
+        $blad = 'Tak';
+        $blad_nazwa = 'Nie podano nazwy etatu';
     } elseif (mb_strlen($nazwa_nowa) > 30) {
-        $response['errors']['nazwa_nowa'] = 'Nazwa etatu nie może być dłuższa niż 30 znaków';
+        $blad = 'Tak';
+        $blad_nazwa = 'Nazwa etatu nie może być dłuższa niż 30 znaków';
     }
     
     // Walidacja płac
     if ($placa_od <= 0) {
-        $response['errors']['placa_od'] = 'Płaca od musi być większa niż 0';
+        $blad = 'Tak';
+        $blad_placa_od = 'Płaca od musi być większa niż 0';
     }
     
     if ($placa_do <= 0) {
-        $response['errors']['placa_do'] = 'Płaca do musi być większa niż 0';
+        $blad = 'Tak';
+        $blad_placa_do = 'Płaca do musi być większa niż 0';
     }
     
     if ($placa_od > $placa_do) {
-        $response['errors']['placa_od'] = 'Płaca od nie może być większa niż płaca do';
+        $blad = 'Tak';
+        $blad_placa_od = 'Płaca od nie może być większa niż płaca do';
     }
     
     // Jeśli brak błędów - aktualizuj w bazie
-    if (empty($response['errors'])) {
+    if ($blad === '') {
         try {
             $stmt = $pdo->prepare("
                 UPDATE etaty 
@@ -55,23 +61,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':nazwa_nowa', $nazwa_nowa, PDO::PARAM_STR);
             $stmt->bindParam(':placa_od', $placa_od);
             $stmt->bindParam(':placa_do', $placa_do);
-            
+
             if ($stmt->execute()) {
-                $response['success'] = true;
-                $response['message'] = 'Etat został zaktualizowany!';
-            } else {
-                $response['success'] = false;
-                $response['message'] = 'Błąd podczas aktualizacji etatu';
+                $zapisano = 'Tak';
             }
         } catch (Exception $e) {
-            $response['success'] = false;
-            $response['message'] = 'Błąd: ' . $e->getMessage();
+            $blad = 'Tak';
         }
-    } else {
-        $response['success'] = false;
-        $response['message'] = 'Formularz zawiera błędy';
     }
 }
 
-header('Content-Type: application/json');
-echo json_encode($response);
+if ($zapisano === 'Tak') {
+    echo '<div class="alert alert-success">Etat został zaktualizowany!</div>';
+} elseif ($blad !== '') {
+    echo '<div class="alert alert-danger">Formularz zawiera błędy</div>';
+    echo '<div data-error-for="nazwa_nowa">' . $blad_nazwa . '</div>';
+    echo '<div data-error-for="placa_od">' . $blad_placa_od . '</div>';
+    echo '<div data-error-for="placa_do">' . $blad_placa_do . '</div>';
+}
