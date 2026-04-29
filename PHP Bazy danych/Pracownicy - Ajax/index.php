@@ -1,20 +1,4 @@
 <?php
-
-if (isset($_POST['delete']) && isset($_POST['delete_id'])){
-
-    $stmt = $pdo->prepare("UPDATE pracownicy SET ID_SZEFA = NULL WHERE ID_SZEFA = :ID_SZEFA");
-    $stmt->bindParam(':ID_SZEFA', $_POST['delete_id'], PDO::PARAM_INT);
-    $stmt->execute();
-
-    $stmt = $pdo->prepare("DELETE FROM pracownicy WHERE ID_PRAC = :ID_PRAC");
-    $stmt->bindParam(':ID_PRAC', $_POST['delete_id'], PDO::PARAM_INT);
-    $stmt->execute();
-
-    # tu jest szpont zeby nie wywalalo komunikatu fikusnego. Mozna bylo to zostawic tak jak jest ale przy testowaniu irytuje jak cholera
-
-    header('Location: index.php');
-    exit;
-}
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
@@ -66,13 +50,14 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
                     <button type="submit" class="btn btn-danger" name="reset" id="reset">Resetuj</button>
                 </div>
                 <div class="col-md-6 text-left d-flex justify-content-end">
-                    <a href="dodaj/pracownik.php" class="btn btn-success">Dodaj nowego pracownika</a>
+                    <button type="button" class="btn btn-success" id="btnAddPracownik" data-bs-toggle="modal" data-bs-target="#modalAddPracownik">Dodaj nowego pracownika</button>
                 </div>
             </div>
         </form>
         <div class="row">
             <div class="col-12">
-                <table class="table">
+                <!-- Tabela -->
+                <table class="table" id="dataTable">
                     <thead>
                     <tr>
                         <th>Id prac</th>
@@ -88,7 +73,15 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
                     </tr>
                     </thead>
                     <tbody id="pracownicy">
-
+                        <!-- Loader na start -->
+                        <tr>
+                            <td colspan="11" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Ładowanie...</span>
+                                </div>
+                                <p class="mt-3 text-muted">Ładowanie danych...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -96,9 +89,46 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
         </div>
     </div>
 
+    <!-- Modal Dodaj Pracownika -->
+    <div class="modal fade" id="modalAddPracownik" tabindex="-1" aria-labelledby="modalAddPracownikLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAddPracownikLabel">Dodaj nowego pracownika</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="formPracownikContainer"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="button" class="btn btn-success" id="btnSavePracownik">Zapisz</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edytuj Pracownik -->
+    <div class="modal fade" id="modalEditPracownik" tabindex="-1" aria-labelledby="modalEditPracownikLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditPracownikLabel">Edytuj pracownika</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="formPracownikEditContainer"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="button" class="btn btn-success" id="btnSaveEditPracownik">Zapisz zmiany</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <script src="../../cdn/jquery.js"></script>
+    <script src="../../../cdn/jquery.js"></script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

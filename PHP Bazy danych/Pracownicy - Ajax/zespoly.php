@@ -1,21 +1,4 @@
 <?php
-require_once 'database.php';
-
-if (isset($_POST['delete']) && isset($_POST['delete_id'])){
-
-    $stmt = $pdo->prepare("UPDATE pracownicy SET id_zesp = NULL WHERE ID_ZESP = :ID_ZESP");
-    $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
-    $stmt->execute();
-
-    $stmt = $pdo->prepare("DELETE FROM zespoly WHERE ID_ZESP = :ID_ZESP");
-    $stmt->bindParam(':ID_ZESP', $_POST['delete_id'], PDO::PARAM_INT);
-    $stmt->execute();
-
-    # tu jest szpont zeby nie wywalalo komunikatu fikusnego. Mozna bylo to zostawic tak jak jest ale przy testowaniu irytuje jak cholera
-
-    header('Location: zespoly.php');
-    exit;
-}
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
@@ -29,23 +12,6 @@ if (isset($_POST['delete']) && isset($_POST['delete_id'])){
 </head>
 <body>
 
-<?php
-
-if(isset($_POST['submit']) && $_POST['search']!=''){
-    $stmt = $pdo->prepare("SELECT * FROM zespoly WHERE NAZWA LIKE :nazwa OR ADRES LIKE :adres");
-    $stmt -> bindValue(':nazwa', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-    $stmt -> bindValue(':adres', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-    $stmt->execute();
-}
-else if (isset($_POST['reset'])){
-    $stmt = $pdo->query('SELECT * FROM zespoly');
-}
-else
-{
-    $stmt = $pdo->query('SELECT * FROM zespoly');
-}
-?>
-
 <div class="container">
     <ul class="nav nav-tabs mt-2">
         <li class="nav-item">
@@ -58,19 +24,19 @@ else
             <a class="nav-link active" href="#">Zespoły</a>
         </li>
     </ul>
-    <form action="" method="post">
+    <form action="" method="post" id="form">
         <div class="row my-5">
             <div class="col-md-4">
-                <input type="text" class="form-control" name="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                <input type="text" class="form-control" name="search" id="search" />
             </div>
             <div class="col-md-1 text-left">
-                <input type="submit" class="btn btn-primary" name="submit" value="Szukaj" />
+                <button type="submit" class="btn btn-primary" name="submit">Szukaj</button>
             </div>
             <div class="col-md-1 text-left">
-                <input type="submit" class="btn btn-danger" name="reset" value="Resetuj" />
+                <button type="submit" class="btn btn-danger" name="reset" id="reset">Resetuj</button>
             </div>
             <div class="col-md-6 text-left d-flex justify-content-end">
-                <a href="dodaj/zespol.php" class="btn btn-success">Dodaj nowy zespół</a>
+                <button type="button" class="btn btn-success" id="btnAddZespol" data-bs-toggle="modal" data-bs-target="#modalAddZespol">Dodaj nowy zespół</button>
             </div>
         </div>
     </form>
@@ -79,39 +45,22 @@ else
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col">ID_ZESP</th>
-                    <th scope="col">Nazwa</th>
-                    <th scope="col">Adres</th>
-                    <th scope="col">Akcje</th>
+                    <th>ID_ZESP</th>
+                    <th>Nazwa</th>
+                    <th>Adres</th>
+                    <th>Akcje</th>
                 </tr>
                 </thead>
-                <tbody>
-                <?php
-                foreach ($stmt as $row){
-                    echo '<tr>';
-                    echo '<td>'.$row['ID_ZESP'].'</td>';
-                    echo '<td>'.$row['NAZWA'].'</td>';
-                    echo '<td>'.$row['ADRES'].'</td>';
-                    echo '<td><a href="edytuj/zespol.php?id='.$row['ID_ZESP'].'"><button type="button" class="btn btn-outline-secondary me-2"><i class="bi bi-pencil-square"></i></button></a>';
-                    echo '<button type="button" class="btn btn-outline-danger" 
-                                    tabindex="0"
-                                    data-bs-toggle="popover"
-                                    data-bs-placement="top"
-                                    data-bs-trigger="focus"
-                                    data-bs-title="Potwierdź usunięcie"
-                                    data-bs-content="<p class=\'mb-2\'>Czy na pewno chcesz usunąć zespół o ID: '. $row['ID_ZESP'] .'?</p>
-                                    <form method=\'post\' class=\'d-inline\'>
-                                        <input type=\'hidden\' name=\'delete_id\' value=\''. $row['ID_ZESP'] .'\'>
-                                        <button type=\'submit\' name=\'delete\' class=\'btn btn-danger btn-sm\'>Usuń</button>
-                                    </form> 
-                                    <button type=\'button\' class=\'btn btn-secondary btn-sm\' data-bs-dismiss=\'popover\'>Anuluj</button>">
-                                <i class="bi bi-trash3"></i>
-                                </button>
-                            </td>
-                            ';
-                    echo '</tr>';
-                }
-                ?>
+                <tbody id="zespoly">
+                    <!-- Loader na start -->
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Ładowanie...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Ładowanie danych...</p>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -119,7 +68,47 @@ else
     </div>
 </div>
 
+<!-- Modal Dodaj Zespol -->
+<div class="modal fade" id="modalAddZespol" tabindex="-1" aria-labelledby="modalAddZespolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddZespolLabel">Dodaj nowy zespół</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="formZespolContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-success" id="btnSaveZespol">Zapisz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edytuj Zespol -->
+<div class="modal fade" id="modalEditZespol" tabindex="-1" aria-labelledby="modalEditZespolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditZespolLabel">Edytuj zespół</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="formZespolEditContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-success" id="btnSaveEditZespol">Zapisz zmiany</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script src="../../../cdn/jquery.js"></script>
+<script src="scriptZespoly.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));

@@ -3,12 +3,15 @@
 require_once 'database.php';
 
 try {
-    $stmt = $pdo->query('SELECT * FROM etaty');
+    $stmt = $pdo->prepare("SELECT * FROM etaty WHERE NAZWA LIKE :nazwa");
+    $stmt->bindValue(':nazwa', '%'.$_POST['search'].'%', PDO::PARAM_STR);
+    $stmt->execute();
+    
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $html = '';
     if (empty($results)) {
-        $html = '<tr><td colspan="4" class="text-center text-muted">Brak etatów</td></tr>';
+        $html = '<tr><td colspan="4" class="text-center text-muted">Brak wyników wyszukiwania</td></tr>';
     } else {
         foreach ($results as $row) {
             $html .= '<tr>';

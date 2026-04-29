@@ -1,21 +1,4 @@
 <?php
-require_once 'database.php';
-
-if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
-
-    $stmt = $pdo->prepare("UPDATE pracownicy SET ETAT = NULL WHERE ETAT = :NAZWA");
-    $stmt->bindParam(':NAZWA', $_POST['delete_nazwa'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    $stmt = $pdo->prepare("DELETE FROM etaty WHERE NAZWA = :NAZWA");
-    $stmt->bindParam(':NAZWA', $_POST['delete_nazwa'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    # tu jest szpont zeby nie wywalalo komunikatu fikusnego. Mozna bylo to zostawic tak jak jest ale przy testowaniu irytuje jak cholera
-
-    header('Location: etaty.php');
-    exit;
-}
 ?>
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
@@ -28,22 +11,6 @@ if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
     <title>Bazy danych - Etaty</title>
 </head>
 <body>
-
-<?php
-//
-//if(isset($_POST['submit']) && $_POST['search']!=''){
-//    $stmt = $pdo->prepare("SELECT * FROM etaty WHERE NAZWA LIKE :nazwa");
-//    $stmt -> bindValue(':nazwa', '%'.$_POST['search'].'%', PDO::PARAM_STR);
-//    $stmt->execute();
-//}
-//else if (isset($_POST['reset'])){
-//    $stmt = $pdo->query('SELECT * FROM etaty');
-//}
-//else
-//{
-//    $stmt = $pdo->query('SELECT * FROM etaty');
-//}
-?>
 
 <div class="container">
     <ul class="nav nav-tabs mt-2">
@@ -60,14 +27,14 @@ if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
     <form action="" method="post" id="form">
         <div class="row my-5">
             <div class="col-md-4 input-group" style="width: 40%;" >
-                <input type="text" class="form-control" name="search" id="search" value="<?php echo isset($_POST['reset']) ? '' : (isset($_POST['search']) ? htmlspecialchars($_POST['search']) : ''); ?>" />
+                <input type="text" class="form-control" name="search" id="search" />
                 <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
             </div>
             <div class="col-md-1 text-left">
-                <button class="btn btn-primary" type="submit" name="submit">Szukaj</button>
+                <button type="submit" class="btn btn-danger" name="reset" id="reset">Resetuj</button>
             </div>
             <div class="col-md-6 text-left d-flex justify-content-end">
-                <a href="dodaj/etat.php" class="btn btn-success">Dodaj nowy etat</a>
+                <button type="button" class="btn btn-success" id="btnAddEtat" data-bs-toggle="modal" data-bs-target="#modalAddEtat">Dodaj nowy etat</button>
             </div>
         </div>
     </form>
@@ -76,14 +43,22 @@ if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col">Nazwa</th>
-                    <th scope="col">Placa od</th>
-                    <th scope="col">Placa do</th>
-                    <th scope="col">Akcje</th>
+                    <th>Nazwa</th>
+                    <th>Placa od</th>
+                    <th>Placa do</th>
+                    <th>Akcje</th>
                 </tr>
                 </thead>
                 <tbody id="etaty">
-
+                    <!-- Loader na start -->
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Ładowanie...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Ładowanie danych...</p>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -91,7 +66,47 @@ if (isset($_POST['delete']) && isset($_POST['delete_nazwa'])){
     </div>
 </div>
 
+<!-- Modal Dodaj Etat -->
+<div class="modal fade" id="modalAddEtat" tabindex="-1" aria-labelledby="modalAddEtatLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAddEtatLabel">Dodaj nowy etat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="formEtatContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-success" id="btnSaveEtat">Zapisz</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edytuj Etat -->
+<div class="modal fade" id="modalEditEtat" tabindex="-1" aria-labelledby="modalEditEtatLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditEtatLabel">Edytuj etat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="formEtatEditContainer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                <button type="button" class="btn btn-success" id="btnSaveEditEtat">Zapisz zmiany</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script src="../../../cdn/jquery.js"></script>
+<script src="scriptEtaty.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
