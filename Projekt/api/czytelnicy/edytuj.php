@@ -2,22 +2,40 @@
 /**
  * POST /api/czytelnicy/edytuj.php
  * Edytuje dane czytelnika.
- * Wymaga zalogowania jako admin.
+ *
+ * Admin: edytuje dowolnego czytelnika (wymaga parametru id).
+ * Czytelnik: edytuje tylko swoje dane (id pobierane z sesji).
+ *
+ * Admin może zmieniać: imie, nazwisko, adres, nr_dokumentu, identyfikator, haslo.
+ * Czytelnik może zmieniać: imie, nazwisko, adres, nr_dokumentu.
  *
  * Dane z formularza (POST):
- *   id            — identyfikator czytelnika (wymagane)
+ *   id            — ID czytelnika (wymagane tylko dla admina)
  *   imie          — imię
  *   nazwisko      — nazwisko
  *   adres         — adres zamieszkania
  *   nr_dokumentu  — numer dokumentu tożsamości
- *   identyfikator — identyfikator (login)
- *   haslo         — nowe hasło (opcjonalne, jeśli puste — bez zmiany)
+ *   identyfikator — identyfikator (tylko admin)
+ *   haslo         — nowe hasło (tylko admin)
  */
 
 require_once __DIR__ . '/../../config/auth.php';
-wymagaj_admin();
 
-$id            = intval($_POST['id'] ?? 0);
+$uzytkownik = zalogowany_uzytkownik();
+
+// Określ ID czytelnika do edycji
+if ($uzytkownik['typ'] === 'admin') {
+    $id = intval($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        http_response_code(400);
+        echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
+        exit;
+    }
+} else {
+    // Czytelnik edytuje siebie
+    $id = $uzytkownik['id'];
+}
+
 $imie          = trim($_POST['imie'] ?? '');
 $nazwisko      = trim($_POST['nazwisko'] ?? '');
 $adres         = trim($_POST['adres'] ?? '');
@@ -25,9 +43,17 @@ $nr_dokumentu  = trim($_POST['nr_dokumentu'] ?? '');
 $identyfikator = trim($_POST['identyfikator'] ?? '');
 $haslo         = $_POST['haslo'] ?? '';
 
-if ($id <= 0 || empty($imie) || empty($nazwisko) || empty($adres) || empty($nr_dokumentu) || empty($identyfikator)) {
+// Walidacja wymaganych pól
+if (empty($imie) || empty($nazwisko) || empty($adres) || empty($nr_dokumentu)) {
     http_response_code(400);
-    echo json_encode(["status" => false, "komunikat" => "Wypełnij wszystkie wymagane pola"]);
+    echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
+    exit;
+}
+
+// Admin musi podać identyfikator
+if ($uzytkownik['typ'] === 'admin' && empty($identyfikator)) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
     exit;
 }
 
@@ -43,44 +69,59 @@ try {
         exit;
     }
 
-    // Sprawdź unikalność identyfikatora (jeśli się zmienia)
-    $sprawdzenie2 = $pdo->prepare(
-        "SELECT id FROM czytelnicy WHERE identyfikator = :identyfikator AND id != :id"
-    );
-    $sprawdzenie2->bindValue(':identyfikator', $identyfikator, PDO::PARAM_STR);
-    $sprawdzenie2->bindValue(':id', $id, PDO::PARAM_INT);
-    $sprawdzenie2->execute();
+    // Admin: sprawdź unikalność identyfikatora (jeśli się zmienia)
+    if ($uzytkownik['typ'] === 'admin') {
+        $sprawdzenie2 = $pdo->prepare(
+            "SELECT id FROM czytelnicy WHERE identyfikator = :identyfikator AND id != :id"
+        );
+        $sprawdzenie2->bindValue(':identyfikator', $identyfikator, PDO::PARAM_STR);
+        $sprawdzenie2->bindValue(':id', $id, PDO::PARAM_INT);
+        $sprawdzenie2->execute();
 
-    if ($sprawdzenie2->fetch()) {
-        http_response_code(409);
-        echo json_encode(["status" => false, "komunikat" => "Identifikator jest już zajęty"]);
-        exit;
+        if ($sprawdzenie2->fetch()) {
+            http_response_code(409);
+            echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
+            exit;
+        }
     }
 
-    // Aktualizuj dane (bez hasła)
-    $zapytanie = $pdo->prepare(
-        "UPDATE czytelnicy
-         SET imie = :imie, nazwisko = :nazwisko, adres = :adres,
-             nr_dokumentu = :nr_dokumentu, identyfikator = :identyfikator
-         WHERE id = :id"
-    );
+    if ($uzytkownik['typ'] === 'admin') {
+        // Admin aktualizuje wszystkie pola
+        $zapytanie = $pdo->prepare(
+            "UPDATE czytelnicy
+             SET imie = :imie, nazwisko = :nazwisko, adres = :adres,
+                 nr_dokumentu = :nr_dokumentu, identyfikator = :identyfikator
+             WHERE id = :id"
+        );
+        $zapytanie->bindValue(':imie',          $imie,          PDO::PARAM_STR);
+        $zapytanie->bindValue(':nazwisko',      $nazwisko,      PDO::PARAM_STR);
+        $zapytanie->bindValue(':adres',         $adres,         PDO::PARAM_STR);
+        $zapytanie->bindValue(':nr_dokumentu',  $nr_dokumentu,  PDO::PARAM_STR);
+        $zapytanie->bindValue(':identyfikator', $identyfikator, PDO::PARAM_STR);
+        $zapytanie->bindValue(':id',            $id,            PDO::PARAM_INT);
+        $zapytanie->execute();
 
-    $zapytanie->bindValue(':imie',          $imie,          PDO::PARAM_STR);
-    $zapytanie->bindValue(':nazwisko',      $nazwisko,      PDO::PARAM_STR);
-    $zapytanie->bindValue(':adres',         $adres,         PDO::PARAM_STR);
-    $zapytanie->bindValue(':nr_dokumentu',  $nr_dokumentu,  PDO::PARAM_STR);
-    $zapytanie->bindValue(':identyfikator', $identyfikator, PDO::PARAM_STR);
-    $zapytanie->bindValue(':id',            $id,            PDO::PARAM_INT);
-    $zapytanie->execute();
-
-    // Opcjonalna zmiana hasła
-    if (!empty($haslo)) {
-        $haslo_hash = password_hash($haslo, PASSWORD_BCRYPT);
-
-        $zapytanie2 = $pdo->prepare("UPDATE czytelnicy SET haslo = :haslo WHERE id = :id");
-        $zapytanie2->bindValue(':haslo', $haslo_hash, PDO::PARAM_STR);
-        $zapytanie2->bindValue(':id',    $id,         PDO::PARAM_INT);
-        $zapytanie2->execute();
+        // Opcjonalna zmiana hasła
+        if (!empty($haslo)) {
+            $haslo_hash = password_hash($haslo, PASSWORD_BCRYPT);
+            $zapytanie2 = $pdo->prepare("UPDATE czytelnicy SET haslo = :haslo WHERE id = :id");
+            $zapytanie2->bindValue(':haslo', $haslo_hash, PDO::PARAM_STR);
+            $zapytanie2->bindValue(':id',    $id,         PDO::PARAM_INT);
+            $zapytanie2->execute();
+        }
+    } else {
+        // Czytelnik aktualizuje tylko swoje dane osobowe
+        $zapytanie = $pdo->prepare(
+            "UPDATE czytelnicy
+             SET imie = :imie, nazwisko = :nazwisko, adres = :adres, nr_dokumentu = :nr_dokumentu
+             WHERE id = :id"
+        );
+        $zapytanie->bindValue(':imie',         $imie,         PDO::PARAM_STR);
+        $zapytanie->bindValue(':nazwisko',     $nazwisko,     PDO::PARAM_STR);
+        $zapytanie->bindValue(':adres',        $adres,        PDO::PARAM_STR);
+        $zapytanie->bindValue(':nr_dokumentu', $nr_dokumentu, PDO::PARAM_STR);
+        $zapytanie->bindValue(':id',           $id,           PDO::PARAM_INT);
+        $zapytanie->execute();
     }
 
     echo json_encode([

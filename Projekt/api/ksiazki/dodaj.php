@@ -22,9 +22,9 @@ $wydawnictwo = trim($_POST['wydawnictwo'] ?? '');
 $rok_wydania = intval($_POST['rok_wydania'] ?? 0);
 $ilosc       = max(1, intval($_POST['ilosc'] ?? 1));
 
-if (empty($autor) || empty($tytul) || empty($wydawnictwo) || $rok_wydania < 1000 || $rok_wydania > 2100) {
+if (empty($autor) || empty($tytul) || empty($wydawnictwo) || $rok_wydania < 1000 || $rok_wydania > 9999) {
     http_response_code(400);
-    echo json_encode(["status" => false, "komunikat" => "Wypełnij wszystkie wymagane pola (rok: 1000-9999)"]);
+    echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
     exit;
 }
 
