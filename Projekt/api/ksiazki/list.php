@@ -17,7 +17,7 @@ try {
              WHERE autor LIKE :szukaj OR tytul LIKE :szukaj OR wydawnictwo LIKE :szukaj
              ORDER BY tytul ASC"
         );
-        $zapytanie->bindValue(':szukaj', "%$szukaj");
+        $zapytanie->bindValue(':szukaj', "%$szukaj%");
     } else {
         $zapytanie = $pdo->query("SELECT * FROM ksiazki ORDER BY tytul ASC");
     }

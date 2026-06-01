@@ -44,7 +44,7 @@ function wymagaj_admin(): void {
     }
 }
 
-// --- Automatyczna weryfikacja sesji ---
+// Automatyczna weryfikacja sesji
 // Każdy endpoint dołączający auth.php wymaga zalogowania.
 wymagaj_zalogowania();
 

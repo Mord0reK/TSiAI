@@ -17,6 +17,7 @@
  *   nr_dokumentu  — numer dokumentu tożsamości
  *   identyfikator — identyfikator (tylko admin)
  *   haslo         — nowe hasło (tylko admin)
+ *   zmien_haslo   — 1 = wymuś zmianę hasła przy logowaniu (tylko admin)
  */
 
 require_once __DIR__ . '/../../config/auth.php';
@@ -42,6 +43,7 @@ $adres         = trim($_POST['adres'] ?? '');
 $nr_dokumentu  = trim($_POST['nr_dokumentu'] ?? '');
 $identyfikator = trim($_POST['identyfikator'] ?? '');
 $haslo         = $_POST['haslo'] ?? '';
+$zmien_haslo   = intval($_POST['zmien_haslo'] ?? 0);
 
 // Walidacja wymaganych pól
 if (empty($imie) || empty($nazwisko) || empty($adres) || empty($nr_dokumentu)) {
@@ -90,7 +92,8 @@ try {
         $zapytanie = $pdo->prepare(
             "UPDATE czytelnicy
              SET imie = :imie, nazwisko = :nazwisko, adres = :adres,
-                 nr_dokumentu = :nr_dokumentu, identyfikator = :identyfikator
+                 nr_dokumentu = :nr_dokumentu, identyfikator = :identyfikator,
+                 zmien_haslo = :zmien_haslo
              WHERE id = :id"
         );
         $zapytanie->bindValue(':imie',          $imie,          PDO::PARAM_STR);
@@ -98,6 +101,7 @@ try {
         $zapytanie->bindValue(':adres',         $adres,         PDO::PARAM_STR);
         $zapytanie->bindValue(':nr_dokumentu',  $nr_dokumentu,  PDO::PARAM_STR);
         $zapytanie->bindValue(':identyfikator', $identyfikator, PDO::PARAM_STR);
+        $zapytanie->bindValue(':zmien_haslo',   $zmien_haslo,   PDO::PARAM_INT);
         $zapytanie->bindValue(':id',            $id,            PDO::PARAM_INT);
         $zapytanie->execute();
 
