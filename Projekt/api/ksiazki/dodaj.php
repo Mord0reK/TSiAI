@@ -5,26 +5,49 @@
  * Wymaga zalogowania jako admin.
  *
  * Dane z formularza (POST):
- *   autor         — imię i nazwisko autora
- *   tytul         — tytuł książki
- *   wydawnictwo   — nazwa wydawnictwa
- *   rok_wydania   — rok wydania (4-cyfrowy)
- *   ilosc         — ilość egzemplarzy (domyślnie 1)
+ *   autor         — imię i nazwisko autora (max 100 znaków)
+ *   tytul         — tytuł książki (max 100 znaków)
+ *   wydawnictwo   — nazwa wydawnictwa (max 100 znaków)
+ *   rok_wydania   — rok wydania (1901 - aktualny rok, ograniczenie typu YEAR w MySQL)
+ *   ilosc         — ilość egzemplarzy (min. 1)
  */
 
 require_once __DIR__ . '/../../config/auth.php';
 wymagaj_admin();
 
-// Pobranie i walidacja danych
+// Pobranie danych
 $autor       = trim($_POST['autor'] ?? '');
 $tytul       = trim($_POST['tytul'] ?? '');
 $wydawnictwo = trim($_POST['wydawnictwo'] ?? '');
 $rok_wydania = intval($_POST['rok_wydania'] ?? 0);
 $ilosc       = max(1, intval($_POST['ilosc'] ?? 1));
 
-if (empty($autor) || empty($tytul) || empty($wydawnictwo) || $rok_wydania < 1000 || $rok_wydania > 9999) {
+// Granice walidacji
+$aktualny_rok = (int)date('Y');
+$min_rok      = 1901; // ograniczenie typu YEAR w MySQL
+$max_dl_tekst = 100;
+
+// Walidacja pól tekstowych — wymagane + długość
+if ($tytul === '' || mb_strlen($tytul) > $max_dl_tekst) {
     http_response_code(400);
-    echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
+    echo json_encode(["status" => false, "komunikat" => "Tytuł jest wymagany (max $max_dl_tekst znaków)"]);
+    exit;
+}
+if ($autor === '' || mb_strlen($autor) > $max_dl_tekst) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Autor jest wymagany (max $max_dl_tekst znaków)"]);
+    exit;
+}
+if ($wydawnictwo === '' || mb_strlen($wydawnictwo) > $max_dl_tekst) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Wydawnictwo jest wymagane (max $max_dl_tekst znaków)"]);
+    exit;
+}
+
+// Walidacja roku — zakres 1901..aktualny rok (typ YEAR w MySQL)
+if ($rok_wydania < $min_rok || $rok_wydania > $aktualny_rok) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Rok wydania musi być w zakresie $min_rok - $aktualny_rok"]);
     exit;
 }
 
@@ -34,7 +57,6 @@ try {
          VALUES (:autor, :tytul, :wydawnictwo, :rok_wydania, :ilosc, :ilosc)"
     );
 
-    // bindujemy value z zmiennych
     $zapytanie->bindValue(':autor',       $autor,       PDO::PARAM_STR);
     $zapytanie->bindValue(':tytul',       $tytul,       PDO::PARAM_STR);
     $zapytanie->bindValue(':wydawnictwo', $wydawnictwo, PDO::PARAM_STR);

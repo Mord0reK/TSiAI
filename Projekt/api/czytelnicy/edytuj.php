@@ -45,6 +45,12 @@ $identyfikator = trim($_POST['identyfikator'] ?? '');
 $haslo         = $_POST['haslo'] ?? '';
 $zmien_haslo   = intval($_POST['zmien_haslo'] ?? 0);
 
+// Granice walidacji
+$max_dl_imie         = 100;
+$max_dl_nazwisko     = 100;
+$max_dl_adres        = 255;
+$max_dl_nr_dokumentu = 50;
+
 // Walidacja wymaganych pól
 if (empty($imie) || empty($nazwisko) || empty($adres) || empty($nr_dokumentu)) {
     http_response_code(400);
@@ -56,6 +62,34 @@ if (empty($imie) || empty($nazwisko) || empty($adres) || empty($nr_dokumentu)) {
 if ($uzytkownik['typ'] === 'admin' && empty($identyfikator)) {
     http_response_code(400);
     echo json_encode(["status" => false, "komunikat" => "Nieprawidłowe dane"]);
+    exit;
+}
+
+// Walidacja długości pól tekstowych
+if (mb_strlen($imie) > $max_dl_imie) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Imię może mieć maksymalnie $max_dl_imie znaków"]);
+    exit;
+}
+if (mb_strlen($nazwisko) > $max_dl_nazwisko) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Nazwisko może mieć maksymalnie $max_dl_nazwisko znaków"]);
+    exit;
+}
+if (mb_strlen($adres) > $max_dl_adres) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Adres może mieć maksymalnie $max_dl_adres znaków"]);
+    exit;
+}
+if (mb_strlen($nr_dokumentu) > $max_dl_nr_dokumentu) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Numer dokumentu może mieć maksymalnie $max_dl_nr_dokumentu znaków"]);
+    exit;
+}
+// Identyfikator — tylko admin może go zmieniać, max 50 znaków
+if ($uzytkownik['typ'] === 'admin' && mb_strlen($identyfikator) > 50) {
+    http_response_code(400);
+    echo json_encode(["status" => false, "komunikat" => "Identyfikator może mieć maksymalnie 50 znaków"]);
     exit;
 }
 

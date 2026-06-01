@@ -508,6 +508,16 @@ $(function () {
             return;
         }
 
+        // Walidacja długości pól tekstowych (zgodnie z VARCHAR w bazie)
+        var limity = { imie: 100, nazwisko: 100, adres: 255, 'nr dokumentu': 50, identyfikator: 50 };
+        var pola = { imie: imie, nazwisko: nazwisko, adres: adres, 'nr dokumentu': nrDok, identyfikator: ident };
+        for (var nazwa in pola) {
+            if (pola[nazwa].length > limity[nazwa]) {
+                pokazFormAlert('czyt', 'danger', nazwa.charAt(0).toUpperCase() + nazwa.slice(1) + ' może mieć maksymalnie ' + limity[nazwa] + ' znaków');
+                return;
+            }
+        }
+
         var dane = {
             imie: imie, nazwisko: nazwisko, adres: adres,
             nr_dokumentu: nrDok, identyfikator: ident,
@@ -561,14 +571,15 @@ $(function () {
     });
 
     function pokazFormAlert(prefiks, typ, wiadomosc) {
-        var $el = $('#czytFormAlert');
+        var $el = $('#' + prefiks + 'FormAlert');
+        var $msg = $('#' + prefiks + 'FormAlertMsg');
         var kolory = {
-            'success': 'text-green-400 bg-green-900/30 border border-green-800',
-            'danger':  'text-red-400 bg-red-900/30 border border-red-800'
+            'success': 'text-green-300 bg-green-900/90 border border-green-700',
+            'danger':  'text-red-300 bg-red-900/90 border border-red-700'
         };
-        $el.removeClass('text-green-400 bg-green-900/30 border border-green-800 text-red-400 bg-red-900/30 border border-red-800');
+        $el.removeClass('text-green-300 bg-green-900/90 border border-green-700 text-red-300 bg-red-900/90 border border-red-700');
         $el.addClass(kolory[typ] || kolory['danger']);
-        $('#czytFormAlertMsg').text(wiadomosc);
+        $msg.text(wiadomosc);
         $el.removeClass('hidden');
     }
 
@@ -612,6 +623,19 @@ $(function () {
     // KSIĄŻKI
     // ============================================================
     var ksiazkiDane = [];
+    var aktualnyRok = new Date().getFullYear();
+
+    // Przełączanie między listą a formularzem
+    function pokazformeKsiazki() {
+        $('#section-ksiazki').addClass('hidden');
+        $('#section-ksiaz-form').removeClass('hidden');
+    }
+
+    function pokazListeKsiazek() {
+        $('#section-ksiaz-form').addClass('hidden');
+        $('#section-ksiazki').removeClass('hidden');
+        zaladujKsiazki($('#ksiazSearch').val());
+    }
 
     function zaladujKsiazki(szukaj) {
         var $loading = $('#ksiazLoading');
@@ -690,45 +714,84 @@ $(function () {
         }
     }
 
-    // Dodaj książkę
+    // Dodaj książkę — pokaż formularz
     $('#ksiazAddBtn').on('click', function () {
-        $('#ksiazModalTitle').text('Dodaj książkę');
-        $('#ksiazModalId').val('');
-        $('#ksiazModalTytul').val('');
-        $('#ksiazModalAutor').val('');
-        $('#ksiazModalWydawnictwo').val('');
-        $('#ksiazModalRok').val('');
-        $('#ksiazModalIlosc').val('1');
-        $('#ksiazModal').removeClass('hidden');
+        $('#ksiazFormId').val('');
+        $('#ksiazFormTitle').text('Nowa książka');
+        $('#ksiazFormSubtitle').text('Dodaj nową książkę do zbiorów biblioteki');
+        $('#ksiazFormTytul').val('');
+        $('#ksiazFormAutor').val('');
+        $('#ksiazFormWydawnictwo').val('');
+        // Domyślnie ustawiamy aktualny rok, by ułatwić wpis
+        $('#ksiazFormRok').val(aktualnyRok).attr('max', aktualnyRok);
+        $('#ksiazFormIlosc').val('1');
+        $('#ksiazFormAlert').addClass('hidden');
+        pokazformeKsiazki();
     });
 
-    // Edytuj książkę
+    // Edytuj książkę — pokaż formularz z danymi
     $(document).on('click', '.ksiaz-edit', function () {
         var id = $(this).data('id');
         var k = ksiazkiDane.find(function (x) { return x.id == id; });
         if (!k) return;
 
-        $('#ksiazModalTitle').text('Edytuj książkę');
-        $('#ksiazModalId').val(k.id);
-        $('#ksiazModalTytul').val(k.tytul);
-        $('#ksiazModalAutor').val(k.autor);
-        $('#ksiazModalWydawnictwo').val(k.wydawnictwo);
-        $('#ksiazModalRok').val(k.rok_wydania);
-        $('#ksiazModalIlosc').val(k.ilosc_calkowita);
-        $('#ksiazModal').removeClass('hidden');
+        $('#ksiazFormId').val(k.id);
+        $('#ksiazFormTitle').text(k.tytul);
+        $('#ksiazFormSubtitle').text('Edytuj dane książki');
+        $('#ksiazFormTytul').val(k.tytul);
+        $('#ksiazFormAutor').val(k.autor);
+        $('#ksiazFormWydawnictwo').val(k.wydawnictwo);
+        $('#ksiazFormRok').val(k.rok_wydania).attr('max', aktualnyRok);
+        $('#ksiazFormIlosc').val(k.ilosc_calkowita);
+        $('#ksiazFormAlert').addClass('hidden');
+        pokazformeKsiazki();
+    });
+
+    // Anuluj — wróć do listy
+    $('#ksiazFormCancel').on('click', function () {
+        pokazListeKsiazek();
     });
 
     // Zapisz książkę
-    $('#ksiazModalSave').on('click', function () {
-        var id = $('#ksiazModalId').val();
-        var tytul = $('#ksiazModalTytul').val().trim();
-        var autor = $('#ksiazModalAutor').val().trim();
-        var wydawnictwo = $('#ksiazModalWydawnictwo').val().trim();
-        var rok = parseInt($('#ksiazModalRok').val());
-        var ilosc = parseInt($('#ksiazModalIlosc').val());
+    $('#ksiazFormSave').on('click', function () {
+        var id = $('#ksiazFormId').val();
+        var tytul = $('#ksiazFormTytul').val().trim();
+        var autor = $('#ksiazFormAutor').val().trim();
+        var wydawnictwo = $('#ksiazFormWydawnictwo').val().trim();
+        var rok = parseInt($('#ksiazFormRok').val());
+        var ilosc = parseInt($('#ksiazFormIlosc').val());
 
+        $('#ksiazFormAlert').addClass('hidden');
+
+        // Walidacja pól wymaganych
         if (!tytul || !autor || !wydawnictwo || !rok || !ilosc) {
-            pokazAlert('ksiaz', 'danger', 'Wypełnij wszystkie wymagane pola');
+            pokazFormAlert('ksiaz', 'danger', 'Wypełnij wszystkie wymagane pola');
+            return;
+        }
+
+        // Walidacja długości pól tekstowych (max 100 znaków)
+        if (tytul.length > 100) {
+            pokazFormAlert('ksiaz', 'danger', 'Tytuł może mieć maksymalnie 100 znaków');
+            return;
+        }
+        if (autor.length > 100) {
+            pokazFormAlert('ksiaz', 'danger', 'Autor może mieć maksymalnie 100 znaków');
+            return;
+        }
+        if (wydawnictwo.length > 100) {
+            pokazFormAlert('ksiaz', 'danger', 'Wydawnictwo może mieć maksymalnie 100 znaków');
+            return;
+        }
+
+        // Walidacja zakresu roku (1901..aktualny rok, zgodnie z typem YEAR w MySQL)
+        if (rok < 1901 || rok > aktualnyRok) {
+            pokazFormAlert('ksiaz', 'danger', 'Rok wydania musi być w zakresie 1901 - ' + aktualnyRok);
+            return;
+        }
+
+        // Walidacja ilości
+        if (ilosc < 1) {
+            pokazFormAlert('ksiaz', 'danger', 'Ilość egzemplarzy musi wynosić co najmniej 1');
             return;
         }
 
@@ -739,8 +802,8 @@ $(function () {
         if (id) dane.id = id;
 
         var $btn = $(this);
-        var $spinner = $('#ksiazModalSpinner');
-        var $text = $('#ksiazModalSaveText');
+        var $spinner = $('#ksiazFormSpinner');
+        var $text = $('#ksiazFormSaveText');
         $btn.prop('disabled', true);
         $spinner.removeClass('hidden');
         $text.text('Zapisywanie...');
@@ -755,17 +818,16 @@ $(function () {
         })
         .done(function (data) {
             if (data.status) {
-                $('#ksiazModal').addClass('hidden');
+                pokazListeKsiazek();
                 pokazAlert('ksiaz', 'success', data.komunikat || 'Zapisano');
-                zaladujKsiazki($('#ksiazSearch').val());
             } else {
-                pokazAlert('ksiaz', 'danger', data.komunikat || 'Nie udało się zapisać');
+                pokazFormAlert('ksiaz', 'danger', data.komunikat || 'Nie udało się zapisać');
             }
         })
         .fail(function (jqXHR) {
             var msg = 'Błąd połączenia z serwerem';
             if (jqXHR.responseJSON && jqXHR.responseJSON.komunikat) msg = jqXHR.responseJSON.komunikat;
-            pokazAlert('ksiaz', 'danger', msg);
+            pokazFormAlert('ksiaz', 'danger', msg);
         })
         .always(function () {
             $btn.prop('disabled', false);
@@ -818,10 +880,10 @@ $(function () {
         var msgId = prefiks + 'AlertMsg';
         var $el = $('#' + id);
         var kolory = {
-            'success': 'text-green-400 bg-green-900/30 border border-green-800',
-            'danger':  'text-red-400 bg-red-900/30 border border-red-800'
+            'success': 'text-green-300 bg-green-900/90 border border-green-700',
+            'danger':  'text-red-300 bg-red-900/90 border border-red-700'
         };
-        $el.removeClass('text-green-400 bg-green-900/30 border border-green-800 text-red-400 bg-red-900/30 border border-red-800');
+        $el.removeClass('text-green-300 bg-green-900/90 border border-green-700 text-red-300 bg-red-900/90 border border-red-700');
         $el.addClass(kolory[typ] || kolory['danger']);
         $('#' + msgId).text(wiadomosc);
         $el.removeClass('hidden');

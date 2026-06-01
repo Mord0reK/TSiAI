@@ -24,6 +24,7 @@ $typ = "Administrator";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administratora - Biblioteka</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <script src="../../cdn/tailwind.min.js"></script>
     <script src="../../cdn/jquery.js"></script>
     <script src="../../cdn/flowbite.min.js"></script>
@@ -384,13 +385,13 @@ $typ = "Administrator";
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-300">Imię</label>
-                                <input type="text" id="czytFormImie" required
+                                <input type="text" id="czytFormImie" required maxlength="100"
                                        class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                                        placeholder="Podaj imię">
                             </div>
                             <div>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-300">Nazwisko</label>
-                                <input type="text" id="czytFormNazwisko" required
+                                <input type="text" id="czytFormNazwisko" required maxlength="100"
                                        class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                                        placeholder="Podaj nazwisko">
                             </div>
@@ -408,13 +409,13 @@ $typ = "Administrator";
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-300">Identyfikator</label>
-                                <input type="text" id="czytFormIdent" required
+                                <input type="text" id="czytFormIdent" required maxlength="50"
                                        class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                                        placeholder="Unikalny identyfikator">
                             </div>
                             <div>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-300">Numer dokumentu</label>
-                                <input type="text" id="czytFormNrDok" required
+                                <input type="text" id="czytFormNrDok" required maxlength="50"
                                        class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
                                        placeholder="Podaj numer dokumentu">
                             </div>
@@ -432,9 +433,9 @@ $typ = "Administrator";
                         </h4>
                         <div>
                             <label class="block mb-1.5 text-sm font-medium text-gray-300">Adres</label>
-                            <input type="text" id="czytFormAdres" required
-                                   class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
-                                   placeholder="Ulica, numer, kod pocztowy, miasto">
+                                <input type="text" id="czytFormAdres" required maxlength="255"
+                                       class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                       placeholder="Ulica, numer, kod pocztowy, miasto">
                         </div>
                     </div>
 
@@ -539,6 +540,117 @@ $typ = "Administrator";
                 </div>
             </div>
 
+            <!-- ==============================
+                 SEKCJA: KSIĄŻKI — FORMULARZ (dodaj/edytuj)
+                 ============================== -->
+            <div id="section-ksiaz-form" class="content-section hidden">
+
+                <div id="ksiazFormAlert" class="hidden mb-6 flex items-center p-4 text-sm rounded-lg" role="alert">
+                    <span id="ksiazFormAlertMsg"></span>
+                </div>
+
+                <!-- Nagłówek profilu -->
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 mb-6">
+                    <div class="flex items-center gap-6">
+                        <div class="w-20 h-20 rounded-full bg-amber-500/20 border-2 border-amber-500/30 flex items-center justify-center shrink-0">
+                            <svg class="w-10 h-10 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 id="ksiazFormTitle" class="text-xl font-bold text-white">Nowa książka</h3>
+                            <p id="ksiazFormSubtitle" class="text-sm text-gray-400 mt-1">Dodaj nową książkę do zbiorów biblioteki</p>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="ksiazFormId">
+
+                <!-- Karty z polami -->
+                <div class="space-y-6">
+
+                    <!-- Dane podstawowe -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                        <h4 class="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+                            </svg>
+                            Dane podstawowe
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-300">Tytuł</label>
+                                <input type="text" id="ksiazFormTytul" required maxlength="100" minlength="1"
+                                       class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                       placeholder="Podaj tytuł książki">
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-300">Autor</label>
+                                <input type="text" id="ksiazFormAutor" required maxlength="100" minlength="1"
+                                       class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                       placeholder="Imię i nazwisko autora">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wydawnictwo i rok -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                        <h4 class="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" />
+                            </svg>
+                            Wydawnictwo i rok wydania
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-300">Wydawnictwo</label>
+                                <input type="text" id="ksiazFormWydawnictwo" required maxlength="100" minlength="1"
+                                       class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                       placeholder="Nazwa wydawnictwa">
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 text-sm font-medium text-gray-300">Rok wydania</label>
+                                <input type="number" id="ksiazFormRok" required min="1901" max="2099"
+                                       class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                       placeholder="np. 2024">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ilość egzemplarzy -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+                        <h4 class="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" />
+                            </svg>
+                            Ilość egzemplarzy
+                        </h4>
+                        <div>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-300">Liczba egzemplarzy</label>
+                            <input type="number" id="ksiazFormIlosc" required min="1"
+                                   class="w-full px-4 py-3 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white placeholder-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors"
+                                   placeholder="np. 1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Przyciski -->
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" id="ksiazFormCancel"
+                            class="px-6 py-3 text-sm font-medium text-gray-400 rounded-lg border border-gray-700 hover:bg-gray-800 hover:text-white transition-colors">
+                        Anuluj
+                    </button>
+                    <button type="button" id="ksiazFormSave"
+                            class="text-white bg-amber-600 hover:bg-amber-700 focus:ring-4 focus:ring-amber-300 font-medium rounded-lg text-sm px-8 py-3 inline-flex items-center justify-center transition">
+                        <svg id="ksiazFormSpinner" class="hidden animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <span id="ksiazFormSaveText">Zapisz</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </main>
 </div>
@@ -577,69 +689,6 @@ $typ = "Administrator";
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
                     <span id="rezModalConfirmText">Zatwierdź</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==============================
-     MODAL: Formularz książki (dodaj/edytuj)
-     ============================== -->
-<div id="ksiazModal" tabindex="-1" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal md:h-full bg-black/60 backdrop-blur-sm">
-    <div class="relative w-full max-w-lg mx-auto mt-10">
-        <div class="relative bg-gray-900 rounded-xl border border-gray-800 shadow-2xl">
-            <div class="flex items-center justify-between p-5 border-b border-gray-800">
-                <h3 id="ksiazModalTitle" class="text-lg font-semibold text-white">Dodaj książkę</h3>
-                <button type="button" class="text-gray-400 hover:text-white rounded-lg p-1.5 hover:bg-gray-800 transition-colors"
-                        onclick="$('#ksiazModal').addClass('hidden')">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-5">
-                <input type="hidden" id="ksiazModalId">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="block mb-1.5 text-sm font-medium text-gray-300">Tytuł</label>
-                        <input type="text" id="ksiazModalTytul" required
-                               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block mb-1.5 text-sm font-medium text-gray-300">Autor</label>
-                        <input type="text" id="ksiazModalAutor" required
-                               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block mb-1.5 text-sm font-medium text-gray-300">Wydawnictwo</label>
-                        <input type="text" id="ksiazModalWydawnictwo" required
-                               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </div>
-                    <div>
-                        <label class="block mb-1.5 text-sm font-medium text-gray-300">Rok wydania</label>
-                        <input type="number" id="ksiazModalRok" required min="1000" max="9999"
-                               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </div>
-                    <div>
-                        <label class="block mb-1.5 text-sm font-medium text-gray-300">Ilość egzemplarzy</label>
-                        <input type="number" id="ksiazModalIlosc" required min="1"
-                               class="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-700 bg-gray-800 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 p-5 border-t border-gray-800">
-                <button type="button" onclick="$('#ksiazModal').addClass('hidden')"
-                        class="px-5 py-2.5 text-sm font-medium text-gray-400 rounded-lg border border-gray-700 hover:bg-gray-800 hover:text-white transition-colors">
-                    Anuluj
-                </button>
-                <button type="button" id="ksiazModalSave"
-                        class="px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors inline-flex items-center gap-2">
-                    <svg id="ksiazModalSpinner" class="hidden animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <span id="ksiazModalSaveText">Zapisz</span>
                 </button>
             </div>
         </div>

@@ -23,6 +23,7 @@ $typ = ucfirst($uzytkownik['typ'] ?? 'czytelnik');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Czytelnika - Biblioteka</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <script src="../../cdn/tailwind.min.js"></script>
     <script src="../../cdn/jquery.js"></script>
     <script src="../../cdn/flowbite.min.js"></script>
