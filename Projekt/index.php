@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biblioteka - Logowanie</title>
     <script src="../cdn/tailwind.min.js"></script>
+    <script src="../cdn/flowbite.min.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
